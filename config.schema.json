@@ -1,0 +1,16 @@
+{
+  "pluginAlias": "TOSTCorpSomfyRTSWeb",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "title": "Device ID",
+        "description": "TOST Corp device's ID",
+        "type": "string",
+        "required": false
+      }
+    }
+  }
+}
