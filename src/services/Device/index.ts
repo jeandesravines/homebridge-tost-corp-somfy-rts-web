@@ -55,11 +55,11 @@ export default class Device extends EventEmitter {
     const updatePosition = async () => {
       return new Promise<void>((resolve) => {
         this.updateResolver = resolve;
-        this.updateTimeout = setTimeout(async () => {
-          await this.handlePositionChange(position);
-          await this.stop();
-
-          resolve();
+        this.updateTimeout = setTimeout(() => {
+          Promise.resolve()
+            .then(() => this.handlePositionChange(position))
+            .then(() => this.stop)
+            .then(() => resolve());
         }, duration);
       });
     };
@@ -104,10 +104,7 @@ export default class Device extends EventEmitter {
   }
 
   private cancelUpdate(): void {
-    if (this.updateTimeout) {
-      clearTimeout(this.updateTimeout);
-    }
-
+    clearTimeout(this.updateTimeout as NodeJS.Timer);
     this.updateResolver?.();
   }
 
@@ -115,18 +112,14 @@ export default class Device extends EventEmitter {
     this.log(`positionChange`, value);
 
     this.position = value;
-    this.emit(DeviceEvent.POSITION_CHANGE, {
-      value,
-    });
+    this.emit(DeviceEvent.POSITION_CHANGE, { value });
   }
 
   private handleStateChange(value: DeviceState) {
     this.log(`stateChange`, value);
 
     this.state = value;
-    this.emit(DeviceEvent.STATE_CHANGE, {
-      value,
-    });
+    this.emit(DeviceEvent.STATE_CHANGE, { value });
   }
 
   private log(...parameters: unknown[]): void {

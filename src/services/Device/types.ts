@@ -1,7 +1,7 @@
 export enum DeviceState {
-  INCREASING,
-  DECREASING,
-  STOPPED,
+  INCREASING = "INCREASING",
+  DECREASING = "DECREASING",
+  STOPPED = "STOPPED",
 }
 
 export enum DeviceEvent {
