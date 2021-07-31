@@ -16,7 +16,7 @@ export default class Device extends EventEmitter {
 
   private position = 100;
   private state = DeviceState.STOPPED;
-  private updateTimeout?: NodeJS.Timer;
+  private updateInterval?: NodeJS.Timer;
   private updateResolver?: () => void;
 
   constructor(args: DeviceConstructorArgs) {
@@ -37,11 +37,16 @@ export default class Device extends EventEmitter {
 
   public async setPosition(position: number): Promise<void> {
     this.log(`setPosition: from ${this.position} to ${position}`);
-
     this.cancelUpdate();
 
     const difference = position - this.position;
+
+    if (difference === 0) {
+      return;
+    }
+
     const duration = Math.abs(configuration.somfy.duration * (difference / 100));
+    const increment = Math.ceil(difference / duration) || 0;
     let handler;
 
     if (position === 0) {
@@ -55,11 +60,18 @@ export default class Device extends EventEmitter {
     const updatePosition = async () => {
       return new Promise<void>((resolve) => {
         this.updateResolver = resolve;
-        this.updateTimeout = setTimeout(() => {
-          Promise.resolve()
-            .then(() => this.handlePositionChange(position))
-            .then(() => this.stop)
-            .then(() => resolve());
+        this.updateInterval = setInterval(async () => {
+          this.handlePositionChange(this.position + increment);
+
+          const isEnded =
+            this.position === position ||
+            (this.position < position && difference < 0) ||
+            (this.position > position && difference > 0);
+
+          if (isEnded) {
+            this.stop();
+            this.cancelUpdate();
+          }
         }, duration);
       });
     };
@@ -104,7 +116,7 @@ export default class Device extends EventEmitter {
   }
 
   private cancelUpdate(): void {
-    clearTimeout(this.updateTimeout as NodeJS.Timer);
+    clearInterval(this.updateInterval as NodeJS.Timer);
     this.updateResolver?.();
   }
 
