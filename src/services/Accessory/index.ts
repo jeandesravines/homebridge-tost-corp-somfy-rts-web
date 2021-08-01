@@ -2,9 +2,11 @@ import { API, CharacteristicValue, PlatformAccessory, Service } from "homebridge
 import * as configuration from "../../configuration";
 import Device from "../Device";
 import { DeviceEvent, DeviceState } from "../Device/types";
+import { AccessoryContext } from "./types";
 
 interface ConstructorArgs {
   device: Device;
+  accessory?: PlatformAccessory<AccessoryContext>;
   homebridge: API;
 }
 
@@ -14,18 +16,19 @@ export default class Accessory {
   private readonly homebridge: API;
   private targetPosition = configuration.somfy.initialPosition;
 
-  public readonly accessory: PlatformAccessory;
+  public readonly accessory: PlatformAccessory<AccessoryContext>;
 
   constructor(args: ConstructorArgs) {
-    const { homebridge, device } = args;
+    const { homebridge, device, accessory } = args;
     const { Service, Characteristic } = homebridge.hap;
     const { name, topic } = device;
     const { platformName } = configuration.platform;
     const uuid = homebridge.hap.uuid.generate(platformName + "." + topic);
 
-    this.accessory = new homebridge.platformAccessory(name, uuid);
     this.device = device;
     this.homebridge = homebridge;
+    this.accessory = accessory ?? new homebridge.platformAccessory(name, uuid);
+    this.accessory.context.topic = this.device.topic;
 
     this.accessory
       .getService(Service.AccessoryInformation)

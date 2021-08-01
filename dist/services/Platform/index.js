@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
 const configuration = require("../../configuration");
 const Accessory_1 = require("../Accessory");
 const ApiClient_1 = require("../ApiClient");
@@ -16,14 +17,13 @@ class Platform {
         this.config = config;
         this.homebridge = homebridge;
         this.homebridge.on("didFinishLaunching", () => {
-            this.removeAccessories();
-            this.addAccessories();
+            this.syncAccessories();
         });
     }
     configureAccessory(accessory) {
         this.accessories.push(accessory);
     }
-    async addAccessories() {
+    async syncAccessories() {
         const { id } = this.config;
         const api = new ApiClient_1.default({ id });
         const devices = await api.getDevices();
@@ -31,17 +31,25 @@ class Platform {
         const accessories = devices.map((informations) => {
             const { name, topic } = informations;
             const device = new Device_1.default({ api, name, topic });
+            const existing = this.accessories.find(({ context }) => {
+                return context.topic === topic;
+            });
             const accessory = new Accessory_1.default({
                 device,
+                accessory: existing,
                 homebridge: this.homebridge,
             });
             return accessory.accessory;
         });
-        this.homebridge.registerPlatformAccessories(pluginName, platformName, accessories);
-    }
-    removeAccessories() {
-        this.homebridge.unregisterPlatformAccessories(this.pluginName, this.platformName, this.accessories);
-        this.accessories.splice(0);
+        const newest = _.differenceBy(accessories, this.accessories, "context.topic");
+        const outdated = _.differenceBy(this.accessories, accessories, "context.topic");
+        this.homebridge.registerPlatformAccessories(pluginName, platformName, newest);
+        this.homebridge.unregisterPlatformAccessories(pluginName, platformName, outdated);
+        for (const { context } of outdated) {
+            this.accessories.splice(this.accessories.findIndex((accessory) => {
+                return accessory.context.topic === context.topic;
+            }));
+        }
     }
 }
 exports.default = Platform;

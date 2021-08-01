@@ -9,14 +9,15 @@ class Accessory {
     targetPosition = configuration.somfy.initialPosition;
     accessory;
     constructor(args) {
-        const { homebridge, device } = args;
+        const { homebridge, device, accessory } = args;
         const { Service, Characteristic } = homebridge.hap;
         const { name, topic } = device;
         const { platformName } = configuration.platform;
         const uuid = homebridge.hap.uuid.generate(platformName + "." + topic);
-        this.accessory = new homebridge.platformAccessory(name, uuid);
         this.device = device;
         this.homebridge = homebridge;
+        this.accessory = accessory ?? new homebridge.platformAccessory(name, uuid);
+        this.accessory.context.topic = this.device.topic;
         this.accessory
             .getService(Service.AccessoryInformation)
             ?.setCharacteristic(Characteristic.Manufacturer, "Somfy")
