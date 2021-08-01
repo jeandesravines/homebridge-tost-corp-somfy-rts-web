@@ -1,4 +1,6 @@
+import CancelablePromise from "cancelable-promise";
 import { EventEmitter } from "events";
+import * as _ from "lodash";
 import * as configuration from "../../configuration";
 import ApiClient from "../ApiClient";
 import { DeviceEvent, DeviceState } from "./types";
@@ -14,10 +16,9 @@ export default class Device extends EventEmitter {
   public readonly topic: string;
   private readonly api: ApiClient;
 
-  private position = 100;
+  private position = configuration.somfy.initialPosition;
   private state = DeviceState.STOPPED;
-  private updateInterval?: NodeJS.Timer;
-  private updateResolver?: () => void;
+  private updateDeferred?: CancelablePromise;
 
   constructor(args: DeviceConstructorArgs) {
     super();
@@ -40,14 +41,10 @@ export default class Device extends EventEmitter {
     this.cancelUpdate();
 
     const difference = position - this.position;
-
-    if (difference === 0) {
-      return;
-    }
-
     const duration = Math.abs(configuration.somfy.duration * (difference / 100));
-    const increment = Math.ceil(difference / duration) || 0;
-    let handler;
+    const ms = 1000;
+    const increment = Math.floor((difference / duration) * ms) || 0;
+    let handler: () => Promise<void>;
 
     if (position === 0) {
       handler = this.down;
@@ -57,27 +54,41 @@ export default class Device extends EventEmitter {
       handler = difference > 0 ? this.up : this.down;
     }
 
-    const updatePosition = async () => {
-      return new Promise<void>((resolve) => {
-        this.updateResolver = resolve;
-        this.updateInterval = setInterval(async () => {
-          this.handlePositionChange(this.position + increment);
+    const deferred = (this.updateDeferred = new CancelablePromise<void>(async (resolve) => {
+      await handler.apply(this);
 
-          const isEnded =
-            this.position === position ||
-            (this.position < position && difference < 0) ||
-            (this.position > position && difference > 0);
+      if (difference === 0) {
+        return resolve();
+      }
 
-          if (isEnded) {
+      const interval = setInterval(() => {
+        const nextPosition = this.position + increment;
+        const isCanceled = deferred.isCanceled();
+        const isEnded =
+          isCanceled ||
+          nextPosition === position ||
+          (nextPosition < position && difference < 0) ||
+          (nextPosition > position && difference > 0);
+
+        if (!isCanceled) {
+          this.handlePositionChange(nextPosition);
+        }
+
+        if (isEnded) {
+          if (!isCanceled) {
             this.stop();
-            this.cancelUpdate();
           }
-        }, duration);
-      });
-    };
 
-    await handler.apply(this);
-    await updatePosition();
+          resolve();
+        }
+      }, ms);
+
+      deferred.then(() => {
+        clearInterval(interval);
+      });
+    }));
+
+    await deferred;
   }
 
   public async up(): Promise<void> {
@@ -103,9 +114,9 @@ export default class Device extends EventEmitter {
   }
 
   public async stop(): Promise<void> {
-    this.log("action: stop");
-
     if (this.position > 0 && this.position < 100) {
+      this.log("action: stop");
+
       await this.api.action({
         action: "stop",
         topic: this.topic,
@@ -116,15 +127,14 @@ export default class Device extends EventEmitter {
   }
 
   private cancelUpdate(): void {
-    clearInterval(this.updateInterval as NodeJS.Timer);
-    this.updateResolver?.();
+    this.updateDeferred?.cancel();
   }
 
   private handlePositionChange(value: number) {
     this.log(`positionChange`, value);
 
-    this.position = value;
-    this.emit(DeviceEvent.POSITION_CHANGE, { value });
+    this.position = _.clamp(Math.round(value), 0, 100);
+    this.emit(DeviceEvent.POSITION_CHANGE, { value: this.position });
   }
 
   private handleStateChange(value: DeviceState) {

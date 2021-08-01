@@ -1,10 +1,11 @@
 # Homebridge TOST Corp Somfy RTS Web
 
-An **unofficial** Homebridge plugin to easily control your Somfy blinds using the TOST Corp box for Somfy RTS.
+An Homebridge plugin (**very unofficial**) to easily control your Somfy blinds using the TOST Corp box for Somfy RTS.
 
 ## Requirements
 
 - A [TOST Corp box for Somfy RTS](https://www.tostcorp.com/boxsomfyrts)
+- A running instance of an Homebridge server
 
 
 ## Installation
@@ -22,7 +23,7 @@ So, you have to complete [the TOST Corp's tutorial](https://www.tostcorp.com/plu
 
 ### Homebridge Configuration
 
-In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key `id`.
+In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key named `id`.
 
 ```json
 {
@@ -39,4 +40,4 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
 
 ## Special thanks
 
-A special thanks to [Homebridge](https://github.com/homebridge/homebridge) for making this possible.
+A special thanks to [TOST Corp](https://www.tostcorp.com/boxsomfyrts) for this incredible device and to [Homebridge](https://github.com/homebridge/homebridge) for making this possible.

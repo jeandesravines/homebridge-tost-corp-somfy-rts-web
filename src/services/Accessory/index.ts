@@ -12,7 +12,7 @@ export default class Accessory {
   private readonly service: Service;
   private readonly device: Device;
   private readonly homebridge: API;
-  private targetPosition = 100;
+  private targetPosition = configuration.somfy.initialPosition;
 
   public readonly accessory: PlatformAccessory;
 
@@ -89,7 +89,7 @@ export default class Accessory {
     return this.targetPosition;
   }
 
-  private setTargetPosition(value: CharacteristicValue) {
+  private async setTargetPosition(value: CharacteristicValue) {
     this.targetPosition = value as number;
     this.device.setPosition(value as number);
   }

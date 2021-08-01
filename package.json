@@ -1,8 +1,8 @@
 {
   "name": "@jdes/homebridge-tost-corp-somfy-rts-web",
   "description": "A Homebridge plugin to easily control your Somfy blinds using the TOST Corp box for Somfy RTS",
-  "version": "1.0.5",
-  "repository": "https://github.com/jeandesravines/homebridge-tostcorp-somfy-rts-web.git",
+  "version": "1.0.6",
+  "repository": "https://github.com/jeandesravines/homebridge-tost-corp-somfy-rts-web.git",
   "license": "MIT",
   "author": "Jean Desravines <hi@jeandesravines.com>",
   "main": "dist/index.js",
@@ -30,6 +30,7 @@
   ],
   "dependencies": {
     "axios": "^0.21.1",
+    "cancelable-promise": "^4.2.1",
     "jsdom": "^16.6.0",
     "lodash": "^4.17.21"
   },

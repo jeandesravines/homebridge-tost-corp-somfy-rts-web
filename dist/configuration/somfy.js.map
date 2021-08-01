@@ -1,0 +1,1 @@
+{"version":3,"file":"somfy.js","sourceRoot":"","sources":["../../src/configuration/somfy.ts"],"names":[],"mappings":";;AAAA,MAAM,KAAK,GAAG,IAAI,IAAI,EAAE,CAAC,QAAQ,EAAE,CAAC;AACpC,MAAM,KAAK,GAAG,KAAK,IAAI,CAAC,IAAI,KAAK,IAAI,EAAE,CAAC;AAExC,kBAAe;IACb,QAAQ,EAAE,MAAM;IAChB,eAAe,EAAE,KAAK,CAAC,CAAC,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC;CACjC,CAAC"}
