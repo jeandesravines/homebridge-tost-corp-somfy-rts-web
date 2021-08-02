@@ -33,10 +33,10 @@ export default class Platform implements DynamicPlatformPlugin {
   }
 
   private async syncAccessories(): Promise<void> {
-    const { id } = this.config as PlatformConfiguration;
+    const { config, pluginName, platformName } = this;
+    const { id } = config as PlatformConfiguration;
     const api = new ApiClient({ id });
     const devices = await api.getDevices();
-    const { pluginName, platformName } = this;
 
     const accessories = devices.map((informations) => {
       const { name, topic } = informations;
