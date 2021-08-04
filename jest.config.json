@@ -1,0 +1,8 @@
+{
+  "preset": "ts-jest",
+  "collectCoverageFrom": [
+    "src/**/*.ts"
+  ],
+  "setupFilesAfterEnv": ["<rootDir>/tests/scripts/setup-after-env.ts"],
+  "silent": true
+}

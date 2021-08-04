@@ -1,3 +1,6 @@
 {
-  "*.{ts}": "npm run lint"
+  "**/*.ts": [
+    "eslint --fix",
+    "jest --bail --findRelatedTests"
+  ]
 }

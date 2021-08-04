@@ -12,16 +12,18 @@ interface PlatformConfiguration extends PlatformConfig {
 
 export default class Platform implements DynamicPlatformPlugin {
   public readonly logger: Logger;
-  public readonly config: PlatformConfig;
+  public readonly config: PlatformConfiguration;
   public readonly homebridge: API;
   public readonly accessories: PlatformAccessory<AccessoryContext>[] = [];
   private readonly pluginName: string = configuration.platform.pluginName;
   private readonly platformName: string = configuration.platform.platformName;
+  private readonly api: ApiClient;
 
   constructor(logger: Logger, config: PlatformConfig, homebridge: API) {
     this.logger = logger;
-    this.config = config;
+    this.config = config as PlatformConfiguration;
     this.homebridge = homebridge;
+    this.api = new ApiClient({ id: this.config.id });
 
     this.homebridge.on("didFinishLaunching", () => {
       this.syncAccessories();
@@ -33,14 +35,12 @@ export default class Platform implements DynamicPlatformPlugin {
   }
 
   private async syncAccessories(): Promise<void> {
-    const { config, pluginName, platformName } = this;
-    const { id } = config as PlatformConfiguration;
-    const api = new ApiClient({ id });
-    const devices = await api.getDevices();
+    const { pluginName, platformName } = this;
+    const devices = await this.api.getDevices();
 
     const accessories = devices.map((informations) => {
       const { name, topic } = informations;
-      const device = new Device({ api, name, topic });
+      const device = new Device({ api: this.api, name, topic });
       const existing = this.accessories.find(({ context }) => {
         return context.topic === topic;
       });
@@ -57,8 +57,13 @@ export default class Platform implements DynamicPlatformPlugin {
     const newest = _.differenceBy(accessories, this.accessories, "context.topic");
     const outdated = _.differenceBy(this.accessories, accessories, "context.topic");
 
-    this.homebridge.registerPlatformAccessories(pluginName, platformName, newest);
-    this.homebridge.unregisterPlatformAccessories(pluginName, platformName, outdated);
+    if (newest.length) {
+      this.homebridge.registerPlatformAccessories(pluginName, platformName, newest);
+    }
+
+    if (outdated.length) {
+      this.homebridge.unregisterPlatformAccessories(pluginName, platformName, outdated);
+    }
 
     for (const { context } of outdated) {
       this.accessories.splice(

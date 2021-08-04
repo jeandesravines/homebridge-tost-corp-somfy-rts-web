@@ -21,9 +21,10 @@ export default class Accessory {
   constructor(args: ConstructorArgs) {
     const { homebridge, device, accessory } = args;
     const { Service, Characteristic } = homebridge.hap;
-    const { name, topic } = device;
+    const { topic } = device;
     const { platformName } = configuration.platform;
     const uuid = homebridge.hap.uuid.generate(platformName + "." + topic);
+    const name = accessory?.displayName || device.name;
 
     this.device = device;
     this.homebridge = homebridge;
@@ -43,26 +44,26 @@ export default class Accessory {
 
     this.service
       .getCharacteristic(Characteristic.CurrentPosition)
-      .onGet(this.getCurrentPosition.bind(this));
+      .onGet(() => this.getCurrentPosition());
 
     this.service
       .getCharacteristic(Characteristic.PositionState)
-      .onGet(this.getPositionState.bind(this));
+      .onGet(() => this.getPositionState());
 
     this.service
       .getCharacteristic(Characteristic.TargetPosition)
-      .onGet(this.getTargetPosition.bind(this))
-      .onSet(this.setTargetPosition.bind(this));
+      .onGet(() => this.getTargetPosition())
+      .onSet((value: CharacteristicValue) => this.setTargetPosition(value));
 
-    this.device.on(DeviceEvent.POSITION_CHANGE, this.handleCurrentPositionChange.bind(this));
-    this.device.on(DeviceEvent.STATE_CHANGE, this.handlePositionStateChange.bind(this));
+    this.device.on(DeviceEvent.POSITION_CHANGE, () => this.handleCurrentPositionChange());
+    this.device.on(DeviceEvent.STATE_CHANGE, () => this.handlePositionStateChange());
   }
 
   private getCurrentPosition(): number {
     return this.device.getPosition();
   }
 
-  private handleCurrentPositionChange() {
+  private handleCurrentPositionChange(): void {
     const { Characteristic } = this.homebridge.hap;
     const value = this.getCurrentPosition();
 
@@ -78,7 +79,7 @@ export default class Accessory {
       [DeviceState.STOPPED]: Characteristic.PositionState.STOPPED,
     };
 
-    return states[value] || Characteristic.PositionState.STOPPED;
+    return states[value] ?? Characteristic.PositionState.STOPPED;
   }
 
   private handlePositionStateChange() {

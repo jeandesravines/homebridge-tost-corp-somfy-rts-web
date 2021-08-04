@@ -76,7 +76,7 @@ export default class ApiClient {
         },
       });
 
-      const cookies = headers["set-cookie"]?.[0];
+      const cookies = headers?.["set-cookie"]?.[0];
       const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1];
 
       if (sessionId) {
@@ -108,16 +108,19 @@ export default class ApiClient {
     const dom = new JSDOM(data);
     const { document } = dom.window;
 
-    const selector = ".equipements table tr:not(:first-child):not(:last-child)";
-    const rows = [...document.querySelectorAll(selector)];
-
-    return rows.map((row) => {
+    const selector = ".equipements table tbody tr";
+    const rows = Array.from(document.querySelectorAll(selector));
+    const devices = rows.map((row) => {
       const fields = row.querySelectorAll(".table_field_edit");
 
       return {
-        topic: fields[0].textContent as string,
-        name: fields[1].textContent as string,
+        topic: fields[0]?.textContent as string,
+        name: fields[1]?.textContent as string,
       };
+    });
+
+    return devices.filter(({ topic }) => {
+      return topic;
     });
   }
 
@@ -136,7 +139,7 @@ export default class ApiClient {
       headers["Content-Type"] = "application/x-www-form-urlencoded";
     }
 
-    return this.axios({
+    return this.axios.request({
       method,
       url,
       headers,

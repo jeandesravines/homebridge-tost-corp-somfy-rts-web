@@ -50,12 +50,12 @@ export default class Device extends EventEmitter {
       handler = this.down;
     } else if (position === 100) {
       handler = this.up;
-    } else {
+    } else if (difference !== 0) {
       handler = difference > 0 ? this.up : this.down;
     }
 
     const deferred = (this.updateDeferred = new CancelablePromise<void>(async (resolve) => {
-      await handler.apply(this);
+      await handler?.apply(this);
 
       if (difference === 0) {
         return resolve();
@@ -131,16 +131,16 @@ export default class Device extends EventEmitter {
   }
 
   private handlePositionChange(value: number) {
-    this.log(`positionChange`, value);
-
     this.position = _.clamp(Math.round(value), 0, 100);
+
+    this.log(`positionChange`, this.position);
     this.emit(DeviceEvent.POSITION_CHANGE, { value: this.position });
   }
 
-  private handleStateChange(value: DeviceState) {
-    this.log(`stateChange`, value);
-
+  private handleStateChange(value: DeviceState): void {
     this.state = value;
+
+    this.log(`stateChange`, value);
     this.emit(DeviceEvent.STATE_CHANGE, { value });
   }
 
