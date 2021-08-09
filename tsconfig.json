@@ -5,8 +5,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext",
-    "typeRoots": ["@types", "node_modules/@types"]
+    "target": "ESNext"
   },
-  "include": ["src", "tests", "services"]
+  "include": ["src", "tests"]
 }
