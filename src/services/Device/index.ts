@@ -93,27 +93,27 @@ export default class Device extends EventEmitter {
 
   public async up(): Promise<void> {
     this.log("action: up");
+    this.handleStateChange(DeviceState.INCREASING);
 
     await this.api.action({
       action: "up",
       topic: this.topic,
     });
-
-    this.handleStateChange(DeviceState.INCREASING);
   }
 
   public async down(): Promise<void> {
     this.log("action: down");
+    this.handleStateChange(DeviceState.DECREASING);
 
     await this.api.action({
       action: "down",
       topic: this.topic,
     });
-
-    this.handleStateChange(DeviceState.DECREASING);
   }
 
   public async stop(): Promise<void> {
+    this.handleStateChange(DeviceState.STOPPED);
+
     if (this.position > 0 && this.position < 100) {
       this.log("action: stop");
 
@@ -122,8 +122,6 @@ export default class Device extends EventEmitter {
         topic: this.topic,
       });
     }
-
-    this.handleStateChange(DeviceState.STOPPED);
   }
 
   private cancelUpdate(): void {
