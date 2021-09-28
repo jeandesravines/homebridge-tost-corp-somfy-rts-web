@@ -1,9 +1,8 @@
-import Accessory from "../../../../src/services/Accessory";
-import Device from "../../../../src/services/Device";
-import ApiClient from "../../../../src/services/ApiClient";
 import { HomebridgeAPI } from "homebridge/lib/api";
-
+import Accessory from "../../../../src/services/Accessory";
 import { AccessoryContext } from "../../../../src/services/Accessory/types";
+import ApiClient from "../../../../src/services/ApiClient";
+import Device from "../../../../src/services/Device";
 import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types";
 
 interface CreateAccessoryArgs {
@@ -49,19 +48,23 @@ describe("constructor", () => {
 describe("getCurrentPosition", () => {
   test("it should returns the device position", () => {
     const { accessory, device } = createAccessory();
-
-    jest.spyOn(device as any, "getPosition").mockReturnValue(42);
+    const mockTouch = jest.spyOn(device as any, "touch").mockReturnValue(undefined);
+    const mockGetPosition = jest.spyOn(device as any, "getPosition").mockReturnValue(42);
 
     const position = accessory["getCurrentPosition"]();
 
     expect(position).toBe(42);
+    expect(mockTouch).toHaveBeenCalled();
+    expect(mockGetPosition).toHaveBeenCalled();
   });
 });
 
 describe("handleCurrentPositionChange", () => {
   test("it should be registered as event handler", () => {
     const { accessory, device } = createAccessory();
-    const mockHandler = jest.spyOn(accessory as any, "handleCurrentPositionChange");
+    const mockHandler = jest
+      .spyOn(accessory as any, "handleCurrentPositionChange")
+      .mockReturnValue(undefined);
 
     device.emit(DeviceEvent.POSITION_CHANGE);
 
@@ -155,7 +158,7 @@ describe("handlePositionStateChange", () => {
 describe("setTargetPosition", () => {
   test("it should set the device position", () => {
     const { accessory, device } = createAccessory();
-    const mockSetPosition = jest.spyOn(device, "setPosition");
+    const mockSetPosition = jest.spyOn(device, "setPosition").mockResolvedValue(undefined);
 
     accessory["setTargetPosition"](42);
 

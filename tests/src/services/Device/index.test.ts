@@ -1,17 +1,19 @@
-import Device from "../../../../src/services/Device";
-import ApiClient from "../../../../src/services/ApiClient";
-import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types";
 import "jest-extended";
+import ApiClient from "../../../../src/services/ApiClient";
+import Device from "../../../../src/services/Device";
+import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types";
 
 function createDevice() {
   const api = new ApiClient({ id: "DEVICE_ID" });
+
+  jest.spyOn(api, "init").mockResolvedValue(undefined);
+  jest.spyOn(api, "action").mockResolvedValue(undefined);
+
   const device = new Device({
     api,
     name: "Name 1",
     topic: "topic_1",
   });
-
-  jest.spyOn(api, "action").mockResolvedValue(undefined);
 
   return { api, device };
 }
