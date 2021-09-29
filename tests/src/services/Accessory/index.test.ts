@@ -170,7 +170,7 @@ describe("getTargetPosition", () => {
   test("it should returns the new position", () => {
     const { accessory } = createAccessory();
 
-    accessory["setTargetPosition"](42);
+    accessory["targetPosition"] = 42;
 
     const targetPosition = accessory["getTargetPosition"]();
 
