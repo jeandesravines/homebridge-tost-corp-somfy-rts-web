@@ -36,8 +36,14 @@ export default class Device extends EventEmitter {
     return this.state;
   }
 
+  public touch(): void {
+    this.api.init().catch((error) => {
+      this.log("error", error);
+    });
+  }
+
   public async setPosition(position: number): Promise<void> {
-    this.log(`setPosition: from ${this.position} to ${position}`);
+    this.log("info", `setPosition: from ${this.position} to ${position}`);
     this.cancelUpdate();
 
     const difference = position - this.position;
@@ -76,7 +82,9 @@ export default class Device extends EventEmitter {
 
         if (isEnded) {
           if (!isCanceled) {
-            this.stop();
+            this.stop().catch((error) => {
+              this.log("error", error);
+            });
           }
 
           resolve();
@@ -92,7 +100,7 @@ export default class Device extends EventEmitter {
   }
 
   public async up(): Promise<void> {
-    this.log("action: up");
+    this.log("info", "action: up");
     this.handleStateChange(DeviceState.INCREASING);
 
     await this.api.action({
@@ -102,7 +110,7 @@ export default class Device extends EventEmitter {
   }
 
   public async down(): Promise<void> {
-    this.log("action: down");
+    this.log("info", "action: down");
     this.handleStateChange(DeviceState.DECREASING);
 
     await this.api.action({
@@ -115,7 +123,7 @@ export default class Device extends EventEmitter {
     this.handleStateChange(DeviceState.STOPPED);
 
     if (this.position > 0 && this.position < 100) {
-      this.log("action: stop");
+      this.log("info", "action: stop");
 
       await this.api.action({
         action: "stop",
@@ -131,18 +139,18 @@ export default class Device extends EventEmitter {
   private handlePositionChange(value: number) {
     this.position = _.clamp(Math.round(value), 0, 100);
 
-    this.log(`positionChange`, this.position);
+    this.log("info", "positionChange", this.position);
     this.emit(DeviceEvent.POSITION_CHANGE, { value: this.position });
   }
 
   private handleStateChange(value: DeviceState): void {
     this.state = value;
 
-    this.log(`stateChange`, value);
+    this.log("info", "stateChange", value);
     this.emit(DeviceEvent.STATE_CHANGE, { value });
   }
 
-  private log(...parameters: unknown[]): void {
-    console.info(`[${this.topic}]:`, ...parameters);
+  private log(level: "info" | "error", ...parameters: unknown[]): void {
+    console[level](`[${this.topic}]:`, ...parameters);
   }
 }

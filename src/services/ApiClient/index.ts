@@ -58,7 +58,7 @@ export default class ApiClient {
     return Date.now() - this.sessionDate < configuration.api.sessionTTL;
   }
 
-  private async init(): Promise<void> {
+  async init(): Promise<void> {
     return this.concurrency(async () => {
       if (this.hasValidSession()) {
         return;
@@ -93,7 +93,9 @@ export default class ApiClient {
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, configuration.api.validationDuration));
+      await new Promise((resolve) => {
+        setTimeout(resolve, configuration.api.validationDuration)
+      });
     });
   }
 

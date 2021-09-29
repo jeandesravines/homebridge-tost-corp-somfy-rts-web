@@ -30,6 +30,8 @@ describe("constructor", () => {
     const { platform, homebridge } = createPlatform();
     const mockSyncDevices = jest.spyOn(platform as any, "syncAccessories");
 
+    jest.spyOn(platform["api"] as any, "getDevices").mockResolvedValue([]);
+
     homebridge.emit("didFinishLaunching");
 
     expect(mockSyncDevices).toHaveBeenCalledTimes(1);
