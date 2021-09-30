@@ -94,7 +94,7 @@ export default class ApiClient {
       });
 
       await new Promise((resolve) => {
-        setTimeout(resolve, configuration.api.validationDuration)
+        setTimeout(resolve, configuration.api.validationDuration);
       });
     });
   }
