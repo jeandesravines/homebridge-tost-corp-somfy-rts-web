@@ -6,11 +6,21 @@
     "type": "object",
     "properties": {
       "id": {
-        "title": "Device ID",
-        "description": "TOST Corp device's ID",
         "type": "string",
-        "required": false
+        "required": true,
+        "minLength": 1,
+        "title": "Device ID",
+        "description": "TOST Corp device's ID"
       }
     }
-  }
+  },
+  "layout": [
+    {
+      "type": "flex",
+      "flex-flow": "column",
+      "items": [
+       "id"
+      ]
+    }
+  ]
 }

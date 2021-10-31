@@ -1,5 +1,9 @@
 # Homebridge TOST Corp Somfy RTS Web
 
+[![Version](https://badgen.net/npm/v/@jdes/homebridge-tost-corp-somfy-rts-web/latest?icon=npm&label)](https://www.npmjs.com/package/@jdes/homebridge-tost-corp-somfy-rts-web)
+
+[![Downloads](https://badgen.net/npm/dt/@jdes/homebridge-tost-corp-somfy-rts-web/latest?label=downloads)](https://www.npmjs.com/package/@jdes/homebridge-tost-corp-somfy-rts-web)
+
 An Homebridge plugin (**very unofficial**) to easily control your Somfy blinds using the TOST Corp box for Somfy RTS.
 
 ## Requirements
