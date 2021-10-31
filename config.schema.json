@@ -15,12 +15,6 @@
     }
   },
   "layout": [
-    {
-      "type": "flex",
-      "flex-flow": "column",
-      "items": [
-       "id"
-      ]
-    }
+    "id"
   ]
 }
