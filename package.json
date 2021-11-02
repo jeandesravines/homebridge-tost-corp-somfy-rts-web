@@ -13,6 +13,10 @@
     "somfy",
     "tost-corp"
   ],
+  "funding": {
+    "type" : "paypal",
+    "url" : "https://paypal.me/jeandesravines0"
+  },
   "scripts": {
     "prebuild": "rm -rf dist",
     "build": "tsc",
