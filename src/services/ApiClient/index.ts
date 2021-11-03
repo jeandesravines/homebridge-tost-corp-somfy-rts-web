@@ -111,7 +111,7 @@ export default class ApiClient {
     const { document } = dom.window;
 
     const selector = ".equipements table tbody tr";
-    const rows = Array.from(document.querySelectorAll(selector));
+    const rows = Array.from<HTMLElement>(document.querySelectorAll(selector));
     const devices = rows.map((row) => {
       const fields = row.querySelectorAll(".table_field_edit");
 

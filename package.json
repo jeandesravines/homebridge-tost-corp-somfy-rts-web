@@ -14,8 +14,8 @@
     "tost-corp"
   ],
   "funding": {
-    "type" : "paypal",
-    "url" : "https://paypal.me/jeandesravines0"
+    "type": "paypal",
+    "url": "https://paypal.me/jeandesravines0"
   },
   "scripts": {
     "prebuild": "rm -rf dist",
@@ -38,7 +38,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "cancelable-promise": "^4.2.1",
-    "jsdom": "^18.0.0",
+    "jsdom": "^18.0.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
@@ -46,8 +46,8 @@
     "@types/jsdom": "^16.2.13",
     "@types/lodash": "^4.14.176",
     "@types/node": "^16.11.6",
-    "@typescript-eslint/eslint-plugin": "^5.2.0",
-    "@typescript-eslint/parser": "^5.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.2",

@@ -42,12 +42,22 @@ describe("concurrency", () => {
       };
     };
 
-    const deferred1 = await withConcurrency(getCallback("foo"));
-    const deferred2 = await withConcurrency(getCallback("bar"));
+    const result1 = await withConcurrency(getCallback("foo"));
+    const result2 = await withConcurrency(getCallback("bar"));
 
     jest.clearAllTimers();
 
-    expect(deferred1).toBe("foo");
-    expect(deferred2).toBe("bar");
+    expect(result1).toBe("foo");
+    expect(result2).toBe("bar");
+  });
+
+  test("it should be reset after a failure", async () => {
+    const withConcurrency = concurrency<string>();
+
+    const result1 = await withConcurrency(() => Promise.reject("Failure")).catch((e) => e);
+    const result2 = await withConcurrency(() => "Success");
+
+    expect(result1).toBe("Failure");
+    expect(result2).toBe("Success");
   });
 });
