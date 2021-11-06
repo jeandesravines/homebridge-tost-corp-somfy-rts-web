@@ -60,7 +60,7 @@ export default class Accessory {
   }
 
   private getCurrentPosition(): number {
-    this.device.touch();
+    // this.device.touch();
 
     return this.device.getPosition();
   }

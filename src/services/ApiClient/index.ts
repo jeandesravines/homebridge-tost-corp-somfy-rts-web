@@ -40,7 +40,7 @@ export default class ApiClient {
   public async action(args: ApiClientActionArgs): Promise<void> {
     const { action, topic } = args;
 
-    await this.init();
+    // await this.init();
     await this.query({
       method: "POST",
       url: configuration.api.paths.server,
@@ -100,7 +100,7 @@ export default class ApiClient {
   }
 
   public async getDevices(): Promise<ApiDevice[]> {
-    await this.init();
+    // await this.init();
 
     const { data } = await this.query({
       method: "GET",
@@ -110,14 +110,14 @@ export default class ApiClient {
     const dom = new JSDOM(data);
     const { document } = dom.window;
 
-    const selector = ".equipements table tbody tr";
+    const selector = ".equipements .table_field";
     const rows = Array.from<HTMLElement>(document.querySelectorAll(selector));
     const devices = rows.map((row) => {
-      const fields = row.querySelectorAll(".table_field_edit");
+      const input = row.querySelector("input[type=checkbox][id]");
 
       return {
-        topic: fields[0]?.textContent as string,
-        name: fields[1]?.textContent as string,
+        topic: input?.id as string,
+        name: row.textContent as string,
       };
     });
 
@@ -130,11 +130,11 @@ export default class ApiClient {
     const { url, method, data } = args;
     const rawData = new URLSearchParams(data as Record<string, string>).toString();
     const headers: Record<string, string> = {
-      Cookie: `device_id=${this.deviceId};`,
+      Cookie: `cookie-consent=1; device_id=${this.deviceId}`,
     };
 
     if (this.sessionId) {
-      headers.Cookie += ` PHPSESSID=${this.sessionId}`;
+      headers.Cookie += `; PHPSESSID=${this.sessionId}`;
     }
 
     if (method === "POST") {
