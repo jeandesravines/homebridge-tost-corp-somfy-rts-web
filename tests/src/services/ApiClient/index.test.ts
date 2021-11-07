@@ -21,7 +21,7 @@ describe("query", () => {
       method: "GET",
       data: "foo=bar",
       headers: {
-        Cookie: `device_id=DEVICE_ID;`,
+        Cookie: `cookie-consent=1; device_id=DEVICE_ID`,
       },
     });
 
@@ -47,7 +47,7 @@ describe("query", () => {
       method: "GET",
       data: "foo=bar",
       headers: {
-        Cookie: `device_id=DEVICE_ID; PHPSESSID=SESSION_ID`,
+        Cookie: `cookie-consent=1; device_id=DEVICE_ID; PHPSESSID=SESSION_ID`,
       },
     });
 
@@ -73,7 +73,7 @@ describe("query", () => {
       method: "POST",
       data: "foo=bar",
       headers: {
-        Cookie: `device_id=DEVICE_ID; PHPSESSID=SESSION_ID`,
+        Cookie: `cookie-consent=1; device_id=DEVICE_ID; PHPSESSID=SESSION_ID`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
@@ -152,27 +152,10 @@ describe("init", () => {
 
     jest.clearAllTimers();
 
-    expect(mockQuery.mock.calls[0]).toEqual([
-      {
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: "DEVICE_ID",
-          check: "Check",
-        },
-      },
-    ]);
-
-    expect(mockQuery.mock.calls[1]).toEqual([
-      {
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: "DEVICE_ID",
-          end_step_one: "Submit",
-        },
-      },
-    ]);
+    expect(mockQuery).toHaveBeenCalledWith({
+      method: "GET",
+      url: configuration.api.paths.control,
+    });
   });
 
   test("it should refresh the session", async () => {
@@ -224,28 +207,14 @@ describe("getDevices", () => {
       <html>
         <body>
           <div class="equipements">
-            <table>
-              <tbody>
-                <tr class="column_title_text">
-                  <td><b>Topic</b></td>
-                  <td><b>Name</b></td>
-                </tr>
-                <tr>
-                  <td><div class="table_field_edit">topic_1</div></td>
-                  <td><div class="table_field_edit">Name 1</div></td>
-                  <td><div class="table_field_edit">Things 1</div></td>
-                </tr>
-                <tr>
-                  <td><div class="table_field_edit">topic_2</div></td>
-                  <td><div class="table_field_edit">Name 2</div></td>
-                  <td><div class="table_field_edit">Things 2</div></td>
-                </tr>
-                </tr>
-                <tr>
-                  <td><div class="input-field"></div></td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table_field">
+              Name 1
+              <input type="checkbox" id="topic_1" />
+            </div>
+            <div class="table_field">
+              Name 2
+              <input type="checkbox" id="topic_2" />
+            </div>
           </div>
         </body>
       </html>

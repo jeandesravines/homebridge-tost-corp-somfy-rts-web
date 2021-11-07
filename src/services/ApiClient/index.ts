@@ -68,12 +68,8 @@ export default class ApiClient {
       delete this.sessionDate;
 
       const { headers } = await this.query({
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: this.deviceId,
-          check: "Check",
-        },
+        method: "GET",
+        url: configuration.api.paths.control,
       });
 
       const cookies = headers?.["set-cookie"]?.[0];
@@ -83,19 +79,6 @@ export default class ApiClient {
         this.sessionId = sessionId;
         this.sessionDate = Date.now();
       }
-
-      await this.query({
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: this.deviceId,
-          end_step_one: "Submit",
-        },
-      });
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, configuration.api.validationDuration);
-      });
     });
   }
 
@@ -110,14 +93,14 @@ export default class ApiClient {
     const dom = new JSDOM(data);
     const { document } = dom.window;
 
-    const selector = ".equipements table tbody tr";
+    const selector = ".equipements .table_field";
     const rows = Array.from<HTMLElement>(document.querySelectorAll(selector));
     const devices = rows.map((row) => {
-      const fields = row.querySelectorAll(".table_field_edit");
+      const input = row.querySelector("input[type=checkbox][id]");
 
       return {
-        topic: fields[0]?.textContent as string,
-        name: fields[1]?.textContent as string,
+        topic: input?.id as string,
+        name: row.textContent?.trim() as string,
       };
     });
 
@@ -130,11 +113,11 @@ export default class ApiClient {
     const { url, method, data } = args;
     const rawData = new URLSearchParams(data as Record<string, string>).toString();
     const headers: Record<string, string> = {
-      Cookie: `device_id=${this.deviceId};`,
+      Cookie: `cookie-consent=1; device_id=${this.deviceId}`,
     };
 
     if (this.sessionId) {
-      headers.Cookie += ` PHPSESSID=${this.sessionId}`;
+      headers.Cookie += `; PHPSESSID=${this.sessionId}`;
     }
 
     if (method === "POST") {

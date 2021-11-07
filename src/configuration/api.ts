@@ -4,6 +4,6 @@ export default {
   validationDuration: 500,
   paths: {
     server: "/server.php",
-    control: "/step_two.php",
+    control: "/control.php",
   },
 };
