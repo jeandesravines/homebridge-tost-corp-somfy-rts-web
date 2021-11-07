@@ -60,41 +60,43 @@ export default class Device extends EventEmitter {
       handler = difference > 0 ? this.up : this.down;
     }
 
-    const deferred = (this.updateDeferred = new CancelablePromise<void>(async (resolve) => {
-      await handler?.apply(this);
+    const deferred = (this.updateDeferred = new CancelablePromise<void>(
+      async (resolve: () => void) => {
+        await handler?.apply(this);
 
-      if (difference === 0) {
-        return resolve();
-      }
-
-      const interval = setInterval(() => {
-        const nextPosition = this.position + increment;
-        const isCanceled = deferred.isCanceled();
-        const isEnded =
-          isCanceled ||
-          nextPosition === position ||
-          (nextPosition < position && difference < 0) ||
-          (nextPosition > position && difference > 0);
-
-        if (!isCanceled) {
-          this.handlePositionChange(nextPosition);
+        if (difference === 0) {
+          return resolve();
         }
 
-        if (isEnded) {
+        const interval = setInterval(() => {
+          const nextPosition = this.position + increment;
+          const isCanceled = deferred.isCanceled();
+          const isEnded =
+            isCanceled ||
+            nextPosition === position ||
+            (nextPosition < position && difference < 0) ||
+            (nextPosition > position && difference > 0);
+
           if (!isCanceled) {
-            this.stop().catch((error) => {
-              this.log("error", error);
-            });
+            this.handlePositionChange(nextPosition);
           }
 
-          resolve();
-        }
-      }, ms);
+          if (isEnded) {
+            if (!isCanceled) {
+              this.stop().catch((error) => {
+                this.log("error", error);
+              });
+            }
 
-      deferred.then(() => {
-        clearInterval(interval);
-      });
-    }));
+            resolve();
+          }
+        }, ms);
+
+        deferred.then(() => {
+          clearInterval(interval);
+        });
+      }
+    ));
 
     await deferred;
   }

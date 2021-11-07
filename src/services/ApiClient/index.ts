@@ -40,7 +40,7 @@ export default class ApiClient {
   public async action(args: ApiClientActionArgs): Promise<void> {
     const { action, topic } = args;
 
-    // await this.init();
+    await this.init();
     await this.query({
       method: "POST",
       url: configuration.api.paths.server,
@@ -68,12 +68,8 @@ export default class ApiClient {
       delete this.sessionDate;
 
       const { headers } = await this.query({
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: this.deviceId,
-          check: "Check",
-        },
+        method: "GET",
+        url: configuration.api.paths.control,
       });
 
       const cookies = headers?.["set-cookie"]?.[0];
@@ -83,24 +79,11 @@ export default class ApiClient {
         this.sessionId = sessionId;
         this.sessionDate = Date.now();
       }
-
-      await this.query({
-        method: "POST",
-        url: configuration.api.paths.server,
-        data: {
-          device_id: this.deviceId,
-          end_step_one: "Submit",
-        },
-      });
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, configuration.api.validationDuration);
-      });
     });
   }
 
   public async getDevices(): Promise<ApiDevice[]> {
-    // await this.init();
+    await this.init();
 
     const { data } = await this.query({
       method: "GET",
@@ -117,7 +100,7 @@ export default class ApiClient {
 
       return {
         topic: input?.id as string,
-        name: row.textContent as string,
+        name: row.textContent?.trim() as string,
       };
     });
 
