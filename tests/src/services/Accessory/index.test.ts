@@ -14,7 +14,7 @@ function createAccessory(args?: CreateAccessoryArgs) {
 
   const homebridge = new HomebridgeAPI();
   const api = new ApiClient({ id: "DEVICE_ID" });
-  const device = new Device({ api, name: "Name 1", topic: "topic_1" });
+  const device = new Device({ api, name: "Name 1", topic: "topic_1", duration: 1 });
 
   const platformAccessory = withAccessory
     ? new homebridge.platformAccessory<AccessoryContext>("Name 2", "uuid-2")

@@ -8,6 +8,12 @@ import Device from "../Device";
 
 interface PlatformConfiguration extends PlatformConfig {
   id: string;
+  devices: [
+    {
+      topic: string;
+      duration: number;
+    }
+  ];
 }
 
 export default class Platform implements DynamicPlatformPlugin {
@@ -37,10 +43,21 @@ export default class Platform implements DynamicPlatformPlugin {
   private async syncAccessories(): Promise<void> {
     const { pluginName, platformName } = this;
     const devices = await this.api.getDevices();
+    const configDevices = this.config.devices;
 
     const accessories = devices.map((informations) => {
       const { name, topic } = informations;
-      const device = new Device({ api: this.api, name, topic });
+      let duration = 20_000;
+
+      if (configDevices != null) {
+        configDevices.forEach((item) => {
+          if (item.topic == topic) {
+            duration = item.duration;
+          }
+        });
+      }
+
+      const device = new Device({ api: this.api, name, topic, duration: duration });
       const existing = this.accessories.find(({ context }) => {
         return context.topic === topic;
       });

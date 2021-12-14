@@ -34,7 +34,13 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
   "platforms": [
     {
       "platform": "TOSTCorpSomfyRTSWeb",
-      "id": "<your_device_id>"
+      "id": "<your_device_id>",
+      "devices": [
+        {
+          "topic":"<your_device_topic>",
+          "duration":"<your_device_duration_in_milliseconds>"
+        }
+      ]
     }
   ]
 }
