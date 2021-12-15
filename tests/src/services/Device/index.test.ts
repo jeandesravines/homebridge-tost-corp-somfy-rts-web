@@ -13,6 +13,7 @@ function createDevice() {
     api,
     name: "Name 1",
     topic: "topic_1",
+    duration: 1,
   });
 
   return { api, device };

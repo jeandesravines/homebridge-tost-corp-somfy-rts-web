@@ -4,7 +4,7 @@ import Platform from "../../../../src/services/Platform";
 function createPlatform() {
   const homebridge = new HomebridgeAPI();
   const logger = console as any;
-  const config = { id: "DEVICE_ID" } as any;
+  const config = { id: "DEVICE_ID", devices: [{ topic: "topic_1", duration: 1 }] } as any;
   const platform = new Platform(logger, config, homebridge);
 
   const createPlatformAccessory = (index: number) => {

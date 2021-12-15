@@ -11,10 +11,18 @@
         "minLength": 1,
         "title": "Device ID",
         "description": "TOST Corp device's ID"
+      },
+      "devices": {
+        "type": "array",
+        "required": true,
+        "minLength": 1,
+        "title": "Devices list",
+        "description": "TOST Corp device's topic & duration"
       }
     }
   },
   "layout": [
-    "id"
+    "id",
+    "devices"
   ]
 }
