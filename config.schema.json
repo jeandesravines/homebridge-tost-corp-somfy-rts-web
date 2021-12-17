@@ -14,15 +14,36 @@
       },
       "devices": {
         "type": "array",
-        "required": true,
-        "minLength": 1,
         "title": "Devices list",
-        "description": "TOST Corp device's topic & duration"
+        "description": "TOST Corp device's to customize",
+        "items": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "required": true,
+              "title": "Topic"
+            },
+            "duration": {
+              "type": "number",
+              "title": "Duration (in milliseconds)"
+            }
+          }
+        }
+      },
+      "excluded": {
+        "type": "array",
+        "title": "Devices list",
+        "description": "TOST Corp device's topics to exclude",
+        "items": {
+          "type": "string"
+        }
       }
     }
   },
   "layout": [
     "id",
-    "devices"
+    "devices",
+    "excluded"
   ]
 }

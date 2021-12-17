@@ -37,9 +37,13 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
       "id": "<your_device_id>",
       "devices": [
         {
-          "topic":"<your_device_topic>",
-          "duration":"<your_device_duration_in_milliseconds>"
+          "topic": "<your_device_topic>",
+          "duration": "<your_device_duration_in_milliseconds>"
         }
+      ],
+      "excluded": [
+        "<your_device_topic>",
+        "<your_other_device_topic>",
       ]
     }
   ]
@@ -47,6 +51,45 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
 ```
 
 **Warning**: After saving the configuration, you have to restart the Homebridge server to let the plugin automatically discover all your Somfy devices.
+
+### Configuration Parameters
+
+- `platform`:
+  - type: `"TOSTCorpSomfyRTSWeb"`
+  - required: `true`
+- `id`:
+  - type: `string`
+  - required: `true`
+  - Description: TOST Corp device's ID
+- `devices`:
+  - type: `array`
+  - required: `false`
+  - description: Accessories to customize
+  - items:
+    - `topic`: 
+      - type: `string`
+      - required: `true`
+      - description: Accessory's topic
+    - `duration`: 
+      - type: `number`
+      - required: `false`
+      - description: Duration of the opening/closing
+      - default: 20_000
+- `excluded`:
+  - type: `array`
+  - required: `false`
+  - description: Accessory's topics to ignore
+  - items:
+    - type: `string`
+
+
+
+
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=jeandesravines/homebridge-tost-corp-somfy-rts-web)](https://github.com/jeandesravines/homebridge-tost-corp-somfy-rts-web/graphs/contributors)
+  
+A big thank you to [TheAbstractDev](https://github.com/TheAbstractDev) for initiating the contribution to this repo
 
 ## Special thanks
 

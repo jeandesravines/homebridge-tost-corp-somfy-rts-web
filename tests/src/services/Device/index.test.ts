@@ -3,7 +3,11 @@ import ApiClient from "../../../../src/services/ApiClient";
 import Device from "../../../../src/services/Device";
 import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types";
 
-function createDevice() {
+interface CreateDeviceArgs {
+  duration?: number;
+}
+
+function createDevice(args?: CreateDeviceArgs) {
   const api = new ApiClient({ id: "DEVICE_ID" });
 
   jest.spyOn(api, "init").mockResolvedValue(undefined);
@@ -13,11 +17,25 @@ function createDevice() {
     api,
     name: "Name 1",
     topic: "topic_1",
-    duration: 1,
+    duration: args?.duration,
   });
 
   return { api, device };
 }
+
+describe("constructor", () => {
+  test("it use the default duration", () => {
+    const { device } = createDevice();
+
+    expect(device["duration"]).toBe(20_000);
+  });
+
+  test("it use the given duration", () => {
+    const { device } = createDevice({ duration: 10_000 });
+
+    expect(device["duration"]).toBe(10_000);
+  });
+});
 
 describe("getState", () => {
   test("it returns the current state", () => {

@@ -8,12 +8,13 @@ import Device from "../Device";
 
 interface PlatformConfiguration extends PlatformConfig {
   id: string;
-  devices: [
-    {
-      topic: string;
-      duration: number;
-    }
-  ];
+  devices?: PlatformConfigurationDevice[];
+  excluded?: string[];
+}
+
+interface PlatformConfigurationDevice {
+  topic: string;
+  duration?: number;
 }
 
 export default class Platform implements DynamicPlatformPlugin {
@@ -41,35 +42,29 @@ export default class Platform implements DynamicPlatformPlugin {
   }
 
   private async syncAccessories(): Promise<void> {
-    const { pluginName, platformName } = this;
+    const { pluginName, platformName, config } = this;
+    const { excluded = [] } = config;
     const devices = await this.api.getDevices();
-    const configDevices = this.config.devices;
 
-    const accessories = devices.map((informations) => {
-      const { name, topic } = informations;
-      let duration = 20_000;
+    const accessories = devices
+      .filter(({ topic }) => !excluded.includes(topic))
+      .map((informations) => {
+        const { name, topic } = informations;
+        const { duration } = this.getConfigurationDeviceByTopic(topic) ?? {};
 
-      if (configDevices != null) {
-        configDevices.forEach((item) => {
-          if (item.topic == topic) {
-            duration = item.duration;
-          }
+        const device = new Device({ api: this.api, name, topic, duration });
+        const existing = this.accessories.find(({ context }) => {
+          return context.topic === topic;
         });
-      }
 
-      const device = new Device({ api: this.api, name, topic, duration: duration });
-      const existing = this.accessories.find(({ context }) => {
-        return context.topic === topic;
+        const accessory = new Accessory({
+          device,
+          accessory: existing,
+          homebridge: this.homebridge,
+        });
+
+        return accessory.accessory;
       });
-
-      const accessory = new Accessory({
-        device,
-        accessory: existing,
-        homebridge: this.homebridge,
-      });
-
-      return accessory.accessory;
-    });
 
     const newest = _.differenceBy(accessories, this.accessories, "context.topic");
     const outdated = _.differenceBy(this.accessories, accessories, "context.topic");
@@ -89,5 +84,9 @@ export default class Platform implements DynamicPlatformPlugin {
         })
       );
     }
+  }
+
+  private getConfigurationDeviceByTopic(topic: string): PlatformConfigurationDevice | null {
+    return this.config.devices?.find((current) => current.topic === topic) ?? null;
   }
 }

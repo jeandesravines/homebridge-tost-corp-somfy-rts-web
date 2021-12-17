@@ -9,14 +9,14 @@ interface DeviceConstructorArgs {
   api: ApiClient;
   name: string;
   topic: string;
-  duration: number;
+  duration?: number;
 }
 
 export default class Device extends EventEmitter {
   public readonly name: string;
   public readonly topic: string;
-  private readonly api: ApiClient;
   public readonly duration: number;
+  private readonly api: ApiClient;
 
   private position = configuration.somfy.initialPosition;
   private state = DeviceState.STOPPED;
@@ -28,7 +28,7 @@ export default class Device extends EventEmitter {
     this.api = args.api;
     this.name = args.name;
     this.topic = args.topic;
-    this.duration = args.duration;
+    this.duration = args.duration ?? configuration.somfy.defaultDuration;
   }
 
   public getPosition(): number {
