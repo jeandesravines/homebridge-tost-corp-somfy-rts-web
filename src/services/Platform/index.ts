@@ -9,12 +9,12 @@ import Device from "../Device";
 interface PlatformConfiguration extends PlatformConfig {
   id: string;
   devices?: PlatformConfigurationDevice[];
-  excluded?: string[];
 }
 
 interface PlatformConfigurationDevice {
   topic: string;
   duration?: number;
+  excluded?: boolean;
 }
 
 export default class Platform implements DynamicPlatformPlugin {
@@ -42,29 +42,31 @@ export default class Platform implements DynamicPlatformPlugin {
   }
 
   private async syncAccessories(): Promise<void> {
-    const { pluginName, platformName, config } = this;
-    const { excluded = [] } = config;
+    const { pluginName, platformName } = this;
     const devices = await this.api.getDevices();
+    const accessories: PlatformAccessory<AccessoryContext>[] = [];
 
-    const accessories = devices
-      .filter(({ topic }) => !excluded.includes(topic))
-      .map((informations) => {
-        const { name, topic } = informations;
-        const { duration } = this.getConfigurationDeviceByTopic(topic) ?? {};
+    devices.forEach((informations) => {
+      const { name, topic } = informations;
+      const { duration, excluded } = this.getConfigurationDeviceByTopic(topic) ?? {};
 
-        const device = new Device({ api: this.api, name, topic, duration });
-        const existing = this.accessories.find(({ context }) => {
-          return context.topic === topic;
-        });
+      if (excluded) {
+        return;
+      }
 
-        const accessory = new Accessory({
-          device,
-          accessory: existing,
-          homebridge: this.homebridge,
-        });
-
-        return accessory.accessory;
+      const device = new Device({ api: this.api, name, topic, duration });
+      const existing = this.accessories.find(({ context }) => {
+        return context.topic === topic;
       });
+
+      const accessory = new Accessory({
+        device,
+        accessory: existing,
+        homebridge: this.homebridge,
+      });
+
+      accessories.push(accessory.accessory);
+    });
 
     const newest = _.differenceBy(accessories, this.accessories, "context.topic");
     const outdated = _.differenceBy(this.accessories, accessories, "context.topic");

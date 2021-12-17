@@ -38,12 +38,9 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
       "devices": [
         {
           "topic": "<your_device_topic>",
-          "duration": "<your_device_duration_in_milliseconds>"
+          "duration": 10000,
+          "excluded": false
         }
-      ],
-      "excluded": [
-        "<your_device_topic>",
-        "<your_other_device_topic>",
       ]
     }
   ]
@@ -74,16 +71,12 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
       - type: `number`
       - required: `false`
       - description: Duration of the opening/closing
-      - default: 20_000
-- `excluded`:
-  - type: `array`
-  - required: `false`
-  - description: Accessory's topics to ignore
-  - items:
-    - type: `string`
-
-
-
+      - default: `20_000`
+    - `excluded`: 
+      - type: `boolean`
+      - required: `false`
+      - description: true if the device has to be ignore
+      - default: `false`
 
 ## Contributors
 

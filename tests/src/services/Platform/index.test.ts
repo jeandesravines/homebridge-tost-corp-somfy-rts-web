@@ -2,8 +2,11 @@ import { HomebridgeAPI } from "homebridge/lib/api";
 import Platform from "../../../../src/services/Platform";
 
 interface CreatePlatformArgs {
-  devices?: Array<{ topic: string; duration?: number }>;
-  excluded?: string[];
+  devices?: Array<{
+    topic: string;
+    duration?: number;
+    excluded?: boolean;
+  }>;
 }
 
 function createPlatform(args?: CreatePlatformArgs) {
@@ -13,7 +16,6 @@ function createPlatform(args?: CreatePlatformArgs) {
     platform: "TOSTCorpSomfyRTSWeb",
     id: "DEVICE_ID",
     devices: args?.devices,
-    excluded: args?.excluded,
   };
 
   const platform = new Platform(logger, config, homebridge);
@@ -173,7 +175,12 @@ describe("syncAccessories", () => {
   });
   test("it should exclude one accessory", async () => {
     const { platform, homebridge, createApiDevice, createPlatformAccessory } = createPlatform({
-      excluded: ["topic_3"],
+      devices: [
+        {
+          topic: "topic_3",
+          excluded: true,
+        },
+      ],
     });
 
     const mockRegisterAccessories = jest.spyOn(homebridge, "registerPlatformAccessories");

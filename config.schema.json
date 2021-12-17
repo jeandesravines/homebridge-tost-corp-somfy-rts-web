@@ -26,24 +26,38 @@
             },
             "duration": {
               "type": "number",
-              "title": "Duration (in milliseconds)"
+              "title": "Duration",
+              "description": "Duration (in milliseconds)"
+            },
+            "excluded": {
+              "type": "boolean",
+              "title": "Excluded",
+              "description": "true if the device has to be ignored"
             }
           }
-        }
-      },
-      "excluded": {
-        "type": "array",
-        "title": "Devices list",
-        "description": "TOST Corp device's topics to exclude",
-        "items": {
-          "type": "string"
         }
       }
     }
   },
   "layout": [
     "id",
-    "devices",
-    "excluded"
+    {
+      "type": "fieldset",
+      "title": "Custom Device",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "notitle": true,
+          "key": "devices",
+          "type": "array",
+          "items": [
+            "devices[].topic",
+            "devices[].duration",
+            "devices[].excluded"
+          ]
+        }
+      ]
+    }
   ]
 }
