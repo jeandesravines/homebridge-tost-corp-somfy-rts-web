@@ -8,6 +8,13 @@ import Device from "../Device";
 
 interface PlatformConfiguration extends PlatformConfig {
   id: string;
+  devices?: PlatformConfigurationDevice[];
+}
+
+interface PlatformConfigurationDevice {
+  topic: string;
+  duration?: number;
+  excluded?: boolean;
 }
 
 export default class Platform implements DynamicPlatformPlugin {
@@ -37,10 +44,17 @@ export default class Platform implements DynamicPlatformPlugin {
   private async syncAccessories(): Promise<void> {
     const { pluginName, platformName } = this;
     const devices = await this.api.getDevices();
+    const accessories: PlatformAccessory<AccessoryContext>[] = [];
 
-    const accessories = devices.map((informations) => {
+    devices.forEach((informations) => {
       const { name, topic } = informations;
-      const device = new Device({ api: this.api, name, topic });
+      const { duration, excluded } = this.getConfigurationDeviceByTopic(topic) ?? {};
+
+      if (excluded) {
+        return;
+      }
+
+      const device = new Device({ api: this.api, name, topic, duration });
       const existing = this.accessories.find(({ context }) => {
         return context.topic === topic;
       });
@@ -51,7 +65,7 @@ export default class Platform implements DynamicPlatformPlugin {
         homebridge: this.homebridge,
       });
 
-      return accessory.accessory;
+      accessories.push(accessory.accessory);
     });
 
     const newest = _.differenceBy(accessories, this.accessories, "context.topic");
@@ -72,5 +86,9 @@ export default class Platform implements DynamicPlatformPlugin {
         })
       );
     }
+  }
+
+  private getConfigurationDeviceByTopic(topic: string): PlatformConfigurationDevice | null {
+    return this.config.devices?.find((current) => current.topic === topic) ?? null;
   }
 }

@@ -11,10 +11,53 @@
         "minLength": 1,
         "title": "Device ID",
         "description": "TOST Corp device's ID"
+      },
+      "devices": {
+        "type": "array",
+        "title": "Devices list",
+        "description": "TOST Corp device's to customize",
+        "items": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "required": true,
+              "title": "Topic"
+            },
+            "duration": {
+              "type": "number",
+              "title": "Duration",
+              "description": "Duration (in milliseconds)"
+            },
+            "excluded": {
+              "type": "boolean",
+              "title": "Excluded",
+              "description": "true if the device has to be ignored"
+            }
+          }
+        }
       }
     }
   },
   "layout": [
-    "id"
+    "id",
+    {
+      "type": "fieldset",
+      "title": "Custom Device",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "notitle": true,
+          "key": "devices",
+          "type": "array",
+          "items": [
+            "devices[].topic",
+            "devices[].duration",
+            "devices[].excluded"
+          ]
+        }
+      ]
+    }
   ]
 }

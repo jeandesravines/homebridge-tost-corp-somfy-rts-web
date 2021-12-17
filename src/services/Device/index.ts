@@ -9,11 +9,13 @@ interface DeviceConstructorArgs {
   api: ApiClient;
   name: string;
   topic: string;
+  duration?: number;
 }
 
 export default class Device extends EventEmitter {
   public readonly name: string;
   public readonly topic: string;
+  public readonly duration: number;
   private readonly api: ApiClient;
 
   private position = configuration.somfy.initialPosition;
@@ -26,6 +28,7 @@ export default class Device extends EventEmitter {
     this.api = args.api;
     this.name = args.name;
     this.topic = args.topic;
+    this.duration = args.duration ?? configuration.somfy.defaultDuration;
   }
 
   public getPosition(): number {
@@ -47,7 +50,7 @@ export default class Device extends EventEmitter {
     this.cancelUpdate();
 
     const difference = position - this.position;
-    const duration = Math.abs(configuration.somfy.duration * (difference / 100));
+    const duration = Math.abs(this.duration * (difference / 100));
     const ms = 1000;
     const increment = Math.floor((difference / duration) * ms) || 0;
     let handler: () => Promise<void>;
