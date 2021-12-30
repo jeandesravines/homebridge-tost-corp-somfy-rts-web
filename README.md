@@ -34,10 +34,10 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
   "platforms": [
     {
       "platform": "TOSTCorpSomfyRTSWeb",
-      "id": "<your_device_id>",
+      "id": "<your_tost_corp_device_id>",
       "devices": [
         {
-          "topic": "<your_device_topic>",
+          "topic": "<your_accessory_topic>",
           "duration": 10000,
           "excluded": false
         }
@@ -82,7 +82,7 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
 
 [![Contributors](https://contrib.rocks/image?repo=jeandesravines/homebridge-tost-corp-somfy-rts-web)](https://github.com/jeandesravines/homebridge-tost-corp-somfy-rts-web/graphs/contributors)
   
-A big thank you to [TheAbstractDev](https://github.com/TheAbstractDev) for initiating the contribution to this repo
+A big thank you to [TheAbstractDev](https://github.com/TheAbstractDev) for initiating the contribution to this repository
 
 ## Special thanks
 
