@@ -71,7 +71,7 @@ export default class Device extends EventEmitter {
           return resolve();
         }
 
-        const interval = setInterval(() => {
+        const interval = setInterval(async () => {
           const nextPosition = this.position + increment;
           const isCanceled = deferred.isCanceled();
           const isEnded =
@@ -84,15 +84,20 @@ export default class Device extends EventEmitter {
             this.handlePositionChange(nextPosition);
           }
 
-          if (isEnded) {
-            if (!isCanceled) {
-              this.stop().catch((error) => {
-                this.log("error", error);
-              });
-            }
-
-            resolve();
+          if (!isEnded) {
+            return;
           }
+
+          if (!isCanceled) {
+            try {
+              await this.stop();
+              await this.handlePositionChange(position);
+            } catch (error) {
+              this.log("error", error);
+            }
+          }
+
+          resolve();
         }, ms);
 
         deferred.then(() => {

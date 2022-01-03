@@ -270,7 +270,8 @@ describe("setPosition", () => {
     jest.advanceTimersByTime(1000);
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(1);
-    expect(mockHandlePositionChange).toHaveBeenCalledTimes(3);
+    expect(mockHandlePositionChange).toHaveBeenCalledTimes(4);
+    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(4, 99);
 
     expect(mockUp).toHaveBeenCalledAfter(mockCancelUpdate as any);
     expect(mockHandlePositionChange).toHaveBeenCalledAfter(mockUp as any);
@@ -316,10 +317,12 @@ describe("setPosition", () => {
       mockHandlePositionChange.mock.invocationCallOrder[4],
       mockHandlePositionChange.mock.invocationCallOrder[5],
       mockStop.mock.invocationCallOrder[0],
+      mockHandlePositionChange.mock.invocationCallOrder[6],
     ];
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(2);
-    expect(mockHandlePositionChange).toHaveBeenCalledTimes(6);
+    expect(mockHandlePositionChange).toHaveBeenCalledTimes(7);
+    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(7, 99);
     expect(mockStop).toHaveBeenCalledTimes(1);
 
     for (let i = 1; i < invocationCallOrders.length; i++) {
