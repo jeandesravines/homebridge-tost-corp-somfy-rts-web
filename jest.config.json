@@ -1,7 +1,11 @@
 {
-  "preset": "ts-jest",
   "collectCoverageFrom": ["src/**/*.ts"],
-  "setupFilesAfterEnv": ["<rootDir>/tests/scripts/setup-after-env.ts"],
-  "silent": true,
+  "fakeTimers": {
+    "doNotFake": ["nextTick"]
+  },
+  "preset": "ts-jest",
+  "setupFilesAfterEnv": ["jest-extended/all", "<rootDir>/tests/scripts/setup-after-env.ts"],
+  // "silent": true,
+  "testPathIgnorePatterns": ["/dist/", "/node_modules/"],
   "testRegex": "/tests/.*\\.test\\.[jt]s$"
 }

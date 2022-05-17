@@ -10,9 +10,9 @@ export enum DeviceEvent {
 }
 
 export interface DeviceEventPositionChange {
-  value: number;
+  value: number
 }
 
 export interface DeviceEventStateChange {
-  value: DeviceState;
+  value: DeviceState
 }
