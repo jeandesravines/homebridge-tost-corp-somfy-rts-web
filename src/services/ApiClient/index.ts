@@ -1,4 +1,3 @@
-import axios, { AxiosInstance, AxiosResponse, Method } from "axios"
 import { JSDOM } from "jsdom"
 import * as configuration from "../../configuration"
 import concurrency from "../../helpers/Concurrency"
@@ -8,8 +7,8 @@ interface ApiClientConstructorArgs {
 }
 
 interface ApiClientQueryArgs {
-  method?: Method
-  url?: string
+  method?: RequestInit["method"]
+  path?: string
   data?: Record<string, string | number | null>
 }
 
@@ -25,25 +24,21 @@ interface ApiDevice {
 
 export default class ApiClient {
   private readonly deviceId: string
-  private readonly axios: AxiosInstance
   private sessionId?: string
   private sessionDate?: number
   private concurrency = concurrency()
 
   constructor(args: ApiClientConstructorArgs) {
     this.deviceId = args.id
-    this.axios = axios.create({
-      baseURL: configuration.api.url,
-    })
   }
 
   public async action(args: ApiClientActionArgs): Promise<void> {
     const { action, topic } = args
 
     await this.init()
-    await this.query({
+    await this.request({
       method: "POST",
-      url: configuration.api.paths.server,
+      path: configuration.api.paths.server,
       data: {
         [action]: topic,
       },
@@ -67,12 +62,12 @@ export default class ApiClient {
       delete this.sessionId
       delete this.sessionDate
 
-      const { headers } = await this.query({
+      const { headers } = await this.request({
         method: "GET",
-        url: configuration.api.paths.control,
+        path: configuration.api.paths.control,
       })
 
-      const cookies = headers?.["set-cookie"]?.[0]
+      const cookies = headers.get("set-cookie")
       const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1]
 
       if (sessionId) {
@@ -85,10 +80,9 @@ export default class ApiClient {
   public async getDevices(): Promise<ApiDevice[]> {
     await this.init()
 
-    const { data } = await this.query({
-      method: "GET",
-      url: configuration.api.paths.control,
-    })
+    const path = configuration.api.paths.control
+    const response = await this.request({ path })
+    const data = await response.text()
 
     const dom = new JSDOM(data)
     const { document } = dom.window
@@ -109,9 +103,10 @@ export default class ApiClient {
     })
   }
 
-  private async query(args: ApiClientQueryArgs): Promise<AxiosResponse> {
-    const { url, method, data } = args
-    const rawData = new URLSearchParams(data as Record<string, string>).toString()
+  private async request(args: ApiClientQueryArgs): Promise<Response> {
+    const { path = "", method = "GET", data } = args
+
+    const params = new URLSearchParams(data as Record<string, string>).toString()
     const headers: Record<string, string> = {
       Cookie: `cookie-consent=1; device_id=${this.deviceId}`,
     }
@@ -124,11 +119,16 @@ export default class ApiClient {
       headers["Content-Type"] = "application/x-www-form-urlencoded"
     }
 
-    return this.axios.request({
+    const isPost = method === "POST"
+    const baseUrl = configuration.api.url
+    const prefix = /\w+:\/\//.test(path) ? "" : baseUrl
+    const query = isPost ? "" : `?${params}`
+    const url = prefix + path + query
+
+    return fetch(url, {
       method,
-      url,
       headers,
-      data: rawData,
+      body: isPost ? params : undefined,
     })
   }
 }
