@@ -6,4 +6,4 @@ export default {
     server: "/server.php",
     control: "/control.php",
   },
-};
+}

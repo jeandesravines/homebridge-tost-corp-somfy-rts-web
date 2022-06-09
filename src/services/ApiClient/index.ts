@@ -1,127 +1,127 @@
-import axios, { AxiosInstance, AxiosResponse, Method } from "axios";
-import { JSDOM } from "jsdom";
-import * as configuration from "../../configuration";
-import concurrency from "../../helpers/Concurrency";
+import axios, { AxiosInstance, AxiosResponse, Method } from "axios"
+import { JSDOM } from "jsdom"
+import * as configuration from "../../configuration"
+import concurrency from "../../helpers/Concurrency"
 
 interface ApiClientConstructorArgs {
-  id: string;
+  id: string
 }
 
 interface ApiClientQueryArgs {
-  method?: Method;
-  url?: string;
-  data?: Record<string, string | number | null>;
+  method?: Method
+  url?: string
+  data?: Record<string, string | number | null>
 }
 
 interface ApiClientActionArgs {
-  action: string;
-  topic: string;
+  action: string
+  topic: string
 }
 
 interface ApiDevice {
-  topic: string;
-  name: string;
+  topic: string
+  name: string
 }
 
 export default class ApiClient {
-  private readonly deviceId: string;
-  private readonly axios: AxiosInstance;
-  private sessionId?: string;
-  private sessionDate?: number;
-  private concurrency = concurrency();
+  private readonly deviceId: string
+  private readonly axios: AxiosInstance
+  private sessionId?: string
+  private sessionDate?: number
+  private concurrency = concurrency()
 
   constructor(args: ApiClientConstructorArgs) {
-    this.deviceId = args.id;
+    this.deviceId = args.id
     this.axios = axios.create({
       baseURL: configuration.api.url,
-    });
+    })
   }
 
   public async action(args: ApiClientActionArgs): Promise<void> {
-    const { action, topic } = args;
+    const { action, topic } = args
 
-    await this.init();
+    await this.init()
     await this.query({
       method: "POST",
       url: configuration.api.paths.server,
       data: {
         [action]: topic,
       },
-    });
+    })
   }
 
   private hasValidSession(): boolean {
     if (!this.sessionId || !this.sessionDate) {
-      return false;
+      return false
     }
 
-    return Date.now() - this.sessionDate < configuration.api.sessionTTL;
+    return Date.now() - this.sessionDate < configuration.api.sessionTTL
   }
 
   async init(): Promise<void> {
     return this.concurrency(async () => {
       if (this.hasValidSession()) {
-        return;
+        return
       }
 
-      delete this.sessionId;
-      delete this.sessionDate;
+      delete this.sessionId
+      delete this.sessionDate
 
       const { headers } = await this.query({
         method: "GET",
         url: configuration.api.paths.control,
-      });
+      })
 
-      const cookies = headers?.["set-cookie"]?.[0];
-      const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1];
+      const cookies = headers?.["set-cookie"]?.[0]
+      const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1]
 
       if (sessionId) {
-        this.sessionId = sessionId;
-        this.sessionDate = Date.now();
+        this.sessionId = sessionId
+        this.sessionDate = Date.now()
       }
-    });
+    })
   }
 
   public async getDevices(): Promise<ApiDevice[]> {
-    await this.init();
+    await this.init()
 
     const { data } = await this.query({
       method: "GET",
       url: configuration.api.paths.control,
-    });
+    })
 
-    const dom = new JSDOM(data);
-    const { document } = dom.window;
+    const dom = new JSDOM(data)
+    const { document } = dom.window
 
-    const selector = ".equipements .table_field";
-    const rows = Array.from<HTMLElement>(document.querySelectorAll(selector));
+    const selector = ".equipements .table_field"
+    const rows = Array.from<HTMLElement>(document.querySelectorAll(selector))
     const devices = rows.map((row) => {
-      const input = row.querySelector("input[type=checkbox][id]");
+      const input = row.querySelector("input[type=checkbox][id]")
 
       return {
         topic: input?.id as string,
         name: row.textContent?.trim() as string,
-      };
-    });
+      }
+    })
 
     return devices.filter(({ topic }) => {
-      return topic;
-    });
+      return topic
+    })
   }
 
   private async query(args: ApiClientQueryArgs): Promise<AxiosResponse> {
-    const { url, method, data } = args;
-    const rawData = new URLSearchParams(data as Record<string, string>).toString();
+    const { url, method, data } = args
+    const rawData = new URLSearchParams(data as Record<string, string>).toString()
     const headers: Record<string, string> = {
       Cookie: `cookie-consent=1; device_id=${this.deviceId}`,
-    };
+    }
 
     if (this.sessionId) {
-      headers.Cookie += `; PHPSESSID=${this.sessionId}`;
+      headers.Cookie += `; PHPSESSID=${this.sessionId}`
     }
 
     if (method === "POST") {
-      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      headers["Content-Type"] = "application/x-www-form-urlencoded"
     }
 
     return this.axios.request({
@@ -129,6 +129,6 @@ export default class ApiClient {
       url,
       headers,
       data: rawData,
-    });
+    })
   }
 }

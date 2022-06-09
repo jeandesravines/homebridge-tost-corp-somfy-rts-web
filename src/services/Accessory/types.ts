@@ -1,3 +1,3 @@
 export interface AccessoryContext {
-  topic: string;
+  topic: string
 }
