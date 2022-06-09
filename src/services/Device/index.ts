@@ -2,6 +2,7 @@ import CancelablePromise from "cancelable-promise"
 import { EventEmitter } from "events"
 import * as _ from "lodash"
 import * as configuration from "../../configuration"
+import logger from "../../helpers/Logger"
 import ApiClient from "../ApiClient"
 import { DeviceEvent, DeviceState } from "./types"
 
@@ -80,7 +81,6 @@ export default class Device extends EventEmitter {
             (nextPosition < position && difference < 0) ||
             (nextPosition > position && difference > 0)
 
-          console.log({ nextPosition, isCanceled })
           if (!isCanceled) {
             this.handlePositionChange(nextPosition)
           }
@@ -99,6 +99,7 @@ export default class Device extends EventEmitter {
           }
 
           resolve()
+          clearInterval(interval)
         }, ms)
 
         deferred.finally(() => {
@@ -162,6 +163,6 @@ export default class Device extends EventEmitter {
   }
 
   private log(level: "info" | "error", ...parameters: unknown[]): void {
-    console[level](`[${this.topic}]:`, ...parameters)
+    logger[level](`[${this.topic}]:`, ...parameters)
   }
 }

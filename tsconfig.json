@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "module": "CommonJS",
     "outDir": "dist",
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext"

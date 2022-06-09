@@ -5,7 +5,5 @@
   },
   "preset": "ts-jest",
   "setupFilesAfterEnv": ["jest-extended/all", "<rootDir>/tests/scripts/setup-after-env.ts"],
-  // "silent": true,
-  "testPathIgnorePatterns": ["/dist/", "/node_modules/"],
-  "testRegex": "/tests/.*\\.test\\.[jt]s$"
+  "testPathIgnorePatterns": ["/dist/", "/node_modules/"]
 }
