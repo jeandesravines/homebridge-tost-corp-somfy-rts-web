@@ -24,9 +24,9 @@ interface ApiDevice {
 
 export default class ApiClient {
   private readonly deviceId: string
+  private readonly concurrency = concurrency()
   private sessionId?: string
   private sessionDate?: number
-  private concurrency = concurrency()
 
   constructor(args: ApiClientConstructorArgs) {
     this.deviceId = args.id
