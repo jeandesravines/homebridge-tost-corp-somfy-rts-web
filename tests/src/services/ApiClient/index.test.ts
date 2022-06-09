@@ -135,7 +135,7 @@ describe("init", () => {
   test("it should not refresh the session; no session ID", async () => {
     const client = createApiClient()
     const mockQuery = jest.spyOn(client, "request" as any).mockResolvedValue({
-      headers: new Headers(),
+      headers: new URLSearchParams(),
     })
 
     jest.spyOn(client, "hasValidSession" as any).mockReturnValue(false)
@@ -155,7 +155,7 @@ describe("init", () => {
 
     jest.spyOn(client, "hasValidSession" as any).mockReturnValue(false)
     jest.spyOn(client, "request" as any).mockResolvedValue({
-      headers: new Headers({
+      headers: new URLSearchParams({
         "set-cookie": "Foo=Bar; PHPSESSID=SESSION_ID; Baz=Yaz",
       }),
     })
