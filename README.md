@@ -11,7 +11,6 @@ An Homebridge plugin (**very unofficial**) to easily control your Somfy blinds u
 - A [TOST Corp box for Somfy RTS](https://www.tostcorp.com/boxsomfyrts)
 - A running instance of an Homebridge server
 
-
 ## Installation
 
 ```bash
@@ -27,7 +26,7 @@ So, you have to complete [the TOST Corp's tutorial](https://www.tostcorp.com/plu
 
 ### Homebridge Configuration
 
-In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key named `id`.
+In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key named `id`.
 
 ```json
 {
@@ -63,16 +62,16 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
   - required: `false`
   - description: Accessories to customize
   - items:
-    - `topic`: 
+    - `topic`:
       - type: `string`
       - required: `true`
       - description: Accessory's topic
-    - `duration`: 
+    - `duration`:
       - type: `number`
       - required: `false`
       - description: Duration of the opening/closing
       - default: `20_000`
-    - `excluded`: 
+    - `excluded`:
       - type: `boolean`
       - required: `false`
       - description: true if the device has to be ignore
@@ -80,8 +79,6 @@ In the Homebridge's `config.json` file, add a new  `TOSTCorpSomfyRTSWeb` platfor
 
 ## Contributors
 
-[![Contributors](https://contrib.rocks/image?repo=jeandesravines/homebridge-tost-corp-somfy-rts-web)](https://github.com/jeandesravines/homebridge-tost-corp-somfy-rts-web/graphs/contributors)
-  
 A big thank you to [TheAbstractDev](https://github.com/TheAbstractDev) for initiating the contribution to this repository
 
 ## Special thanks
