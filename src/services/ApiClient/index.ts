@@ -7,7 +7,7 @@ interface ApiClientConstructorArgs {
   id: string
 }
 
-interface ApiClientQueryArgs {
+interface ApiClientRequestArgs {
   method?: Method
   url?: string
   data?: Record<string, string | number | null>
@@ -41,7 +41,7 @@ export default class ApiClient {
     const { action, topic } = args
 
     await this.init()
-    await this.query({
+    await this.request({
       method: "POST",
       url: configuration.api.paths.server,
       data: {
@@ -67,12 +67,12 @@ export default class ApiClient {
       delete this.sessionId
       delete this.sessionDate
 
-      const { headers } = await this.query({
+      const { headers } = await this.request({
         method: "GET",
         url: configuration.api.paths.control,
       })
 
-      const cookies = headers?.["set-cookie"]?.[0]
+      const cookies = headers["set-cookie"]?.join(", ")
       const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1]
 
       if (sessionId) {
@@ -85,7 +85,7 @@ export default class ApiClient {
   public async getDevices(): Promise<ApiDevice[]> {
     await this.init()
 
-    const { data } = await this.query({
+    const { data } = await this.request({
       method: "GET",
       url: configuration.api.paths.control,
     })
@@ -109,7 +109,7 @@ export default class ApiClient {
     })
   }
 
-  private async query(args: ApiClientQueryArgs): Promise<AxiosResponse> {
+  private async request(args: ApiClientRequestArgs): Promise<AxiosResponse> {
     const { url, method, data } = args
     const rawData = new URLSearchParams(data as Record<string, string>).toString()
     const headers: Record<string, string> = {

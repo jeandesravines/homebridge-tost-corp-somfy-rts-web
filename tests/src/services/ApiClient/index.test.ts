@@ -1,16 +1,16 @@
-import ApiClient from "../../../../src/services/ApiClient"
 import * as configuration from "../../../../src/configuration"
+import ApiClient from "../../../../src/services/ApiClient"
 
 function createApiClient() {
   return new ApiClient({ id: "DEVICE_ID" })
 }
 
-describe("query", () => {
+describe("request", () => {
   test("it should use Device ID", async () => {
     const client = createApiClient()
     const mockAxios = jest.spyOn(client["axios"], "request").mockResolvedValue({ data: "ok" })
 
-    const result = await client["query"]({
+    const result = await client["request"]({
       url: "http://localhost",
       method: "GET",
       data: { foo: "bar" },
@@ -36,7 +36,7 @@ describe("query", () => {
 
     client["sessionId"] = "SESSION_ID"
 
-    const result = await client["query"]({
+    const result = await client["request"]({
       url: "http://localhost",
       method: "GET",
       data: { foo: "bar" },
@@ -62,7 +62,7 @@ describe("query", () => {
 
     client["sessionId"] = "SESSION_ID"
 
-    const result = await client["query"]({
+    const result = await client["request"]({
       url: "http://localhost",
       method: "POST",
       data: { foo: "bar" },
@@ -131,18 +131,18 @@ describe("init", () => {
     const client = createApiClient()
     const mockConcurrency = jest.spyOn(client as any, "concurrency")
     const mockHasValidSession = jest.spyOn(client as any, "hasValidSession").mockReturnValue(true)
-    const mockQuery = jest.spyOn(client as any, "query").mockResolvedValue({})
+    const mockRequest = jest.spyOn(client as any, "request").mockResolvedValue({})
 
     await client["init"]()
 
     expect(mockHasValidSession).toHaveBeenCalled()
     expect(mockConcurrency).toHaveBeenCalled()
-    expect(mockQuery).not.toHaveBeenCalled()
+    expect(mockRequest).not.toHaveBeenCalled()
   })
 
   test("it should not refresh the session; no session ID", async () => {
     const client = createApiClient()
-    const mockQuery = jest.spyOn(client as any, "query").mockResolvedValue({
+    const mockRequest = jest.spyOn(client as any, "request").mockResolvedValue({
       headers: {},
     })
 
@@ -152,7 +152,7 @@ describe("init", () => {
 
     jest.clearAllTimers()
 
-    expect(mockQuery).toHaveBeenCalledWith({
+    expect(mockRequest).toHaveBeenCalledWith({
       method: "GET",
       url: configuration.api.paths.control,
     })
@@ -162,7 +162,7 @@ describe("init", () => {
     const client = createApiClient()
 
     jest.spyOn(client as any, "hasValidSession").mockReturnValue(false)
-    jest.spyOn(client as any, "query").mockResolvedValue({
+    jest.spyOn(client as any, "request").mockResolvedValue({
       headers: {
         "set-cookie": ["Foo=Bar; PHPSESSID=SESSION_ID; Baz=Yaz"],
       },
@@ -178,10 +178,10 @@ describe("init", () => {
 })
 
 describe("action", () => {
-  test("it should query the API", async () => {
+  test("it should request the API", async () => {
     const client = createApiClient()
     const mockInit = jest.spyOn(client as any, "init").mockResolvedValue(undefined)
-    const mockQuery = jest.spyOn(client as any, "query").mockResolvedValue({
+    const mockRequest = jest.spyOn(client as any, "request").mockResolvedValue({
       data: "OK",
     })
 
@@ -191,7 +191,7 @@ describe("action", () => {
     })
 
     expect(mockInit).toHaveBeenCalled()
-    expect(mockQuery).toHaveBeenCalledWith({
+    expect(mockRequest).toHaveBeenCalledWith({
       method: "POST",
       url: configuration.api.paths.server,
       data: {
@@ -223,7 +223,7 @@ describe("getDevices", () => {
     const client = createApiClient()
     const mockInit = jest.spyOn(client as any, "init").mockResolvedValue(undefined)
 
-    jest.spyOn(client as any, "query").mockResolvedValue({ data })
+    jest.spyOn(client as any, "request").mockResolvedValue({ data })
 
     const devices = await client.getDevices()
 
