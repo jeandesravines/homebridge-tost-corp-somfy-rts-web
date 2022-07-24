@@ -54,7 +54,9 @@ export default class Device extends EventEmitter {
     const duration = Math.abs(this.duration * (difference / 100))
     const ms = 1000
     const increment = Math.floor((difference / duration) * ms) || 0
+
     let handler: () => Promise<void>
+    let isStopped = false
 
     if (position === 0) {
       handler = this.down
@@ -81,6 +83,8 @@ export default class Device extends EventEmitter {
             (nextPosition < position && difference < 0) ||
             (nextPosition > position && difference > 0)
 
+          this.log("info", { isCanceled, isEnded, isStopped })
+
           if (!isCanceled) {
             this.handlePositionChange(nextPosition)
           }
@@ -89,7 +93,9 @@ export default class Device extends EventEmitter {
             return
           }
 
-          if (!isCanceled) {
+          if (!isCanceled && !isStopped) {
+            isStopped = true
+
             try {
               await this.stop()
               await this.handlePositionChange(position)
@@ -98,12 +104,9 @@ export default class Device extends EventEmitter {
             }
           }
 
-          deferred.cancel()
-        }, ms)
-
-        deferred.finally(() => {
           clearInterval(interval)
-        }, true)
+          resolve()
+        }, ms)
       }
     ))
 
