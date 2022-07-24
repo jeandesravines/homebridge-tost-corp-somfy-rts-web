@@ -262,7 +262,7 @@ describe("setPosition", () => {
 
     const start = 42
     const end = 99
-    const times = Math.ceil((end - start) / increment)
+    const times = Math.floor((end - start) / increment)
 
     device["position"] = start
     device.setPosition(end)
@@ -272,7 +272,7 @@ describe("setPosition", () => {
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(1)
     expect(mockHandlePositionChange).toHaveBeenCalledTimes(times)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(times, 102)
+    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(times, 97)
 
     expect(mockUp).toHaveBeenCalledAfter(mockCancelUpdate as any)
     expect(mockHandlePositionChange).toHaveBeenCalledAfter(mockUp as any)
@@ -318,14 +318,13 @@ describe("setPosition", () => {
       mockDown.mock.invocationCallOrder[0],
       mockHandlePositionChange.mock.invocationCallOrder[4],
       mockHandlePositionChange.mock.invocationCallOrder[5],
-      mockHandlePositionChange.mock.invocationCallOrder[6],
       mockStop.mock.invocationCallOrder[0],
     ]
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(2)
-    expect(mockHandlePositionChange).toHaveBeenCalledTimes(7)
+    expect(mockHandlePositionChange).toHaveBeenCalledTimes(6)
     expect(mockHandlePositionChange).toHaveBeenNthCalledWith(4, 70)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(7, 55)
+    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(6, 60)
     expect(mockStop).toHaveBeenCalledTimes(1)
 
     for (let i = 1; i < invocationCallOrders.length; i++) {
@@ -356,8 +355,8 @@ test("it should increase, stop, decrease, stop", async () => {
   jest.advanceTimersByTime(1000)
 
   expect(mockCancelUpdate).toHaveBeenCalledTimes(2)
-  expect(mockHandlePositionChange).toHaveBeenCalledTimes(6)
+  expect(mockHandlePositionChange).toHaveBeenCalledTimes(5)
   expect(mockHandlePositionChange).toHaveBeenNthCalledWith(3, 65)
-  expect(mockHandlePositionChange).toHaveBeenNthCalledWith(6, 50)
+  expect(mockHandlePositionChange).toHaveBeenNthCalledWith(5, 55)
   expect(mockStop).toHaveBeenCalledTimes(1)
 })

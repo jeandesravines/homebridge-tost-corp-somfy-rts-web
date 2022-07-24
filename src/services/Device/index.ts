@@ -83,12 +83,8 @@ export default class Device extends EventEmitter {
             (nextPosition < position && difference < 0) ||
             (nextPosition > position && difference > 0)
 
-          if (!isCanceled) {
-            this.handlePositionChange(nextPosition)
-          }
-
           if (!isEnded) {
-            return
+            return this.handlePositionChange(nextPosition)
           }
 
           if (!isCanceled && !isStopped) {

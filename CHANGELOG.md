@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.17] - 2022-06-12
+
+### Fixed
+
+- fix(Move): (Really) Avoid sending additional "stop" commands that cause Somfy device going to its preset location
+
 ## [1.1.15] - 2022-06-12
 
 ### Changed
@@ -21,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix(Move): Avoid sending additional "stop" commands that cause "My" Somfys going to their preset location
+- fix(Move): Avoid sending additional "stop" commands that cause Somfy device going to its preset location
 
 ## [1.1.12] - 2022-01-03
 
