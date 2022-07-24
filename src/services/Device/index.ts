@@ -93,13 +93,13 @@ export default class Device extends EventEmitter {
             try {
               await this.stop()
               await this.handlePositionChange(position)
+              await deferred.cancel()
             } catch (error) {
               this.log("error", error)
             }
           }
 
           resolve()
-          clearInterval(interval)
         }, ms)
 
         deferred.finally(() => {
