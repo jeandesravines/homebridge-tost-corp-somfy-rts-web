@@ -19,7 +19,7 @@
   },
   "overrides": [
     {
-      "files": ["tests/**/*"],
+      "files": ["*.test.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": ["off"]
       }

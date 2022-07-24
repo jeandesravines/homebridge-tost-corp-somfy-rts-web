@@ -1,9 +1,9 @@
 import { HomebridgeAPI } from "homebridge/lib/api"
-import Accessory from "../../../../src/services/Accessory"
-import { AccessoryContext } from "../../../../src/services/Accessory/types"
-import ApiClient from "../../../../src/services/ApiClient"
-import Device from "../../../../src/services/Device"
-import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types"
+import Accessory from "."
+import ApiClient from "../ApiClient"
+import Device from "../Device"
+import { DeviceEvent, DeviceState } from "../Device/types"
+import { AccessoryContext } from "./types"
 
 interface CreateAccessoryArgs {
   withAccessory?: boolean

@@ -1,4 +1,4 @@
-import concurrency from "../../../../src/helpers/Concurrency"
+import concurrency from "."
 
 describe("concurrency", () => {
   test("it create a function", () => {

@@ -4,6 +4,6 @@
     "doNotFake": ["nextTick"]
   },
   "preset": "ts-jest",
-  "setupFilesAfterEnv": ["jest-extended/all", "<rootDir>/tests/scripts/setup-after-env.ts"],
+  "setupFilesAfterEnv": ["jest-extended/all", "<rootDir>/jest.setup.ts"],
   "testPathIgnorePatterns": ["/dist/", "/node_modules/"]
 }

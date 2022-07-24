@@ -54,6 +54,7 @@ export default class Device extends EventEmitter {
     const duration = Math.abs(this.duration * (difference / 100))
     const ms = 1000
     const increment = Math.floor((difference / duration) * ms) || 0
+
     let handler: () => Promise<void>
 
     if (position === 0) {
@@ -62,53 +63,42 @@ export default class Device extends EventEmitter {
       handler = this.up
     } else if (difference !== 0) {
       handler = difference > 0 ? this.up : this.down
+    } else {
+      return
     }
 
-    const deferred = (this.updateDeferred = new CancelablePromise<void>(
-      async (resolve: () => void) => {
-        await handler?.apply(this)
+    if (difference === 0) {
+      return handler.apply(this)
+    }
 
-        if (difference === 0) {
-          return resolve()
-        }
+    const deferred: CancelablePromise = (this.updateDeferred = new CancelablePromise<void>(
+      async (resolve: () => void) => {
+        await handler.apply(this)
 
         const interval = setInterval(async () => {
           const nextPosition = this.position + increment
           const isCanceled = deferred.isCanceled()
           const isEnded =
             isCanceled ||
-            nextPosition === position ||
-            (nextPosition < position && difference < 0) ||
-            (nextPosition > position && difference > 0)
+            (nextPosition <= position && difference < 0) ||
+            (nextPosition >= position && difference > 0)
 
-          if (!isCanceled) {
+          if (isEnded) {
+            clearInterval(interval)
+            resolve()
+          } else {
             this.handlePositionChange(nextPosition)
           }
-
-          if (!isEnded) {
-            return
-          }
-
-          if (!isCanceled) {
-            try {
-              await this.stop()
-              await this.handlePositionChange(position)
-            } catch (error) {
-              this.log("error", error)
-            }
-          }
-
-          resolve()
-          clearInterval(interval)
         }, ms)
-
-        deferred.finally(() => {
-          clearInterval(interval)
-        })
       }
     ))
 
-    await deferred
+    await deferred.then(async () => {
+      if (!deferred.isCanceled()) {
+        await this.handlePositionChange(position)
+        await this.stop()
+      }
+    })
   }
 
   public async up(): Promise<void> {

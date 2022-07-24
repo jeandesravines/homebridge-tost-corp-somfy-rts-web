@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.18] - 2022-07-25
+
+### Fixed
+
+- fix(Move): Avoid sending additional "stop" commands that cause Somfy device going to its preset location
+
+### Changed
+
+- chore(Dependencies): Upgrade dependencies
+
 ## [1.1.15] - 2022-06-12
 
 ### Changed
@@ -18,10 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - feat(Logger): Use Homebridge's logger
-
-### Fixed
-
-- fix(Move): Avoid sending additional "stop" commands that cause "My" Somfys going to their preset location
 
 ## [1.1.12] - 2022-01-03
 

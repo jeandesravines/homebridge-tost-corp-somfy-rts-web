@@ -1,5 +1,5 @@
 import { HomebridgeAPI } from "homebridge/lib/api"
-import Platform from "../../../../src/services/Platform"
+import Platform from "."
 
 interface CreatePlatformArgs {
   devices?: Array<{

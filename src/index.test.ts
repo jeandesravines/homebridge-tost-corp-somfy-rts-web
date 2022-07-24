@@ -1,5 +1,5 @@
-import initialize from "../../src"
-import Platform from "../../src/services/Platform"
+import initialize from "."
+import Platform from "./services/Platform"
 
 describe("index", () => {
   test("it should call the init function", () => {

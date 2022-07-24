@@ -1,6 +1,6 @@
-import ApiClient from "../../../../src/services/ApiClient"
-import Device from "../../../../src/services/Device"
-import { DeviceEvent, DeviceState } from "../../../../src/services/Device/types"
+import Device from "."
+import ApiClient from "../ApiClient"
+import { DeviceEvent, DeviceState } from "./types"
 
 interface CreateDeviceArgs {
   duration?: number
@@ -269,16 +269,17 @@ describe("setPosition", () => {
 
     await new Promise((resolve) => process.nextTick(resolve))
     jest.advanceTimersByTime(12000)
+    await new Promise((resolve) => process.nextTick(resolve))
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(1)
     expect(mockHandlePositionChange).toHaveBeenCalledTimes(times)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(times, 102)
+    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(times, 99)
 
     expect(mockUp).toHaveBeenCalledAfter(mockCancelUpdate as any)
     expect(mockHandlePositionChange).toHaveBeenCalledAfter(mockUp as any)
     expect(mockStop).toHaveBeenCalledAfter(mockHandlePositionChange as any)
 
-    for (let i = 1; i <= times; i++) {
+    for (let i = 1; i < times; i++) {
       expect(mockHandlePositionChange).toHaveBeenNthCalledWith(i, start + i * increment)
     }
   })
@@ -303,9 +304,12 @@ describe("setPosition", () => {
     device.setPosition(55)
 
     await new Promise((resolve) => process.nextTick(resolve))
+
     jest.advanceTimersByTime(1000)
     jest.advanceTimersByTime(1000)
     jest.advanceTimersByTime(1000)
+
+    await new Promise((resolve) => process.nextTick(resolve))
 
     const invocationCallOrders = [
       mockCancelUpdate.mock.invocationCallOrder[0],
@@ -318,7 +322,6 @@ describe("setPosition", () => {
       mockDown.mock.invocationCallOrder[0],
       mockHandlePositionChange.mock.invocationCallOrder[4],
       mockHandlePositionChange.mock.invocationCallOrder[5],
-      mockHandlePositionChange.mock.invocationCallOrder[6],
       mockStop.mock.invocationCallOrder[0],
     ]
 
@@ -344,6 +347,7 @@ test("it should increase, stop, decrease, stop", async () => {
   device.setPosition(99)
 
   await new Promise((resolve) => process.nextTick(resolve))
+
   jest.advanceTimersByTime(1000)
   jest.advanceTimersByTime(1000)
   jest.advanceTimersByTime(1000)
@@ -351,9 +355,12 @@ test("it should increase, stop, decrease, stop", async () => {
   device.setPosition(50)
 
   await new Promise((resolve) => process.nextTick(resolve))
+
   jest.advanceTimersByTime(1000)
   jest.advanceTimersByTime(1000)
   jest.advanceTimersByTime(1000)
+
+  await new Promise((resolve) => process.nextTick(resolve))
 
   expect(mockCancelUpdate).toHaveBeenCalledTimes(2)
   expect(mockHandlePositionChange).toHaveBeenCalledTimes(6)

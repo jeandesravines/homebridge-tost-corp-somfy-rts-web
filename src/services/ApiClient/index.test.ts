@@ -1,5 +1,5 @@
-import * as configuration from "../../../../src/configuration"
-import ApiClient from "../../../../src/services/ApiClient"
+import ApiClient from "."
+import * as configuration from "../../configuration"
 
 function createApiClient() {
   return new ApiClient({ id: "DEVICE_ID" })
