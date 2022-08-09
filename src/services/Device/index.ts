@@ -11,15 +11,17 @@ interface DeviceConstructorArgs {
   name: string
   topic: string
   duration?: number
+  delta?: number
 }
 
 export default class Device extends EventEmitter {
   public readonly name: string
   public readonly topic: string
   public readonly duration: number
+  public readonly delta: number
   private readonly api: ApiClient
 
-  private position = configuration.somfy.initialPosition
+  private percent = 1
   private state = DeviceState.STOPPED
   private updateDeferred?: CancelablePromise
 
@@ -30,10 +32,14 @@ export default class Device extends EventEmitter {
     this.name = args.name
     this.topic = args.topic
     this.duration = args.duration ?? configuration.somfy.defaultDuration
+    this.delta = args.delta ?? configuration.somfy.defaultDelta
   }
 
   public getPosition(): number {
-    return this.position
+    const { delta, percent } = this
+    const value = percent === 0 || percent === 1 ? percent : Math.min(0.01, percent - delta)
+
+    return value * 100
   }
 
   public getState(): DeviceState {
@@ -47,13 +53,13 @@ export default class Device extends EventEmitter {
   }
 
   public async setPosition(position: number): Promise<void> {
-    this.log("info", `setPosition: from ${this.position} to ${position}`)
+    const currentPosition = this.getPosition()
+
+    this.log("info", `setPosition: from ${currentPosition} to ${position}`)
     this.cancelUpdate()
 
-    const difference = position - this.position
-    const duration = Math.abs(this.duration * (difference / 100))
+    const difference = position - currentPosition
     const ms = 1000
-    const increment = Math.floor((difference / duration) * ms) || 0
 
     let handler: () => Promise<void>
 
@@ -76,19 +82,20 @@ export default class Device extends EventEmitter {
         await handler.apply(this)
 
         const interval = setInterval(async () => {
-          const nextPosition = this.position + increment
-          const isCanceled = deferred.isCanceled()
-          const isEnded =
-            isCanceled ||
-            (nextPosition <= position && difference < 0) ||
-            (nextPosition >= position && difference > 0)
-
-          if (isEnded) {
+          if (deferred.isCanceled()) {
             clearInterval(interval)
             resolve()
-          } else {
-            this.handlePositionChange(nextPosition)
+
+            return
           }
+
+          this.handlePositionChange(nextPosition)
+
+          const currentPosition = this.getPosition()
+          const isEnded =
+            isCanceled ||
+            (currentPosition <= position && difference < 0) ||
+            (currentPosition >= position && difference > 0)
         }, ms)
       }
     ))
