@@ -21,7 +21,7 @@ export default class Device extends EventEmitter {
   public readonly delta: number
   private readonly api: ApiClient
 
-  private percent = 1
+  private percent = this.toPercent(configuration.somfy.initialPosition)
   private state = DeviceState.STOPPED
   private updateDeferred?: CancelablePromise
 
@@ -36,10 +36,18 @@ export default class Device extends EventEmitter {
   }
 
   public getPosition(): number {
-    const { delta, percent } = this
-    const value = percent === 0 || percent === 1 ? percent : Math.min(0.01, percent - delta)
+    return this.toPosition(this.percent)
+  }
 
-    return value * 100
+  private toPosition(percent: number): number {
+    const { delta } = this
+    const value = percent === 0 || percent === 1 ? percent : Math.max(0.01, percent - delta)
+
+    return Math.round(value * 100)
+  }
+
+  private toPercent(position: number): number {
+    return position >= 1 ? _.round(position / 100, 2) : 0
   }
 
   public getState(): DeviceState {
@@ -53,19 +61,20 @@ export default class Device extends EventEmitter {
   }
 
   public async setPosition(position: number): Promise<void> {
-    const currentPosition = this.getPosition()
-
-    this.log("info", `setPosition: from ${currentPosition} to ${position}`)
+    this.log("info", `setPosition: from ${this.getPosition()} to ${position}`)
     this.cancelUpdate()
 
-    const difference = position - currentPosition
+    const percent = this.toPercent(position)
+    const difference = percent - this.percent
+    const direction = difference > 0 ? 1 : -1
     const ms = 1000
+    const increment = (ms * direction) / this.duration
 
     let handler: () => Promise<void>
 
-    if (position === 0) {
+    if (percent === 0) {
       handler = this.down
-    } else if (position === 100) {
+    } else if (percent === 100) {
       handler = this.up
     } else if (difference !== 0) {
       handler = difference > 0 ? this.up : this.down
@@ -82,27 +91,24 @@ export default class Device extends EventEmitter {
         await handler.apply(this)
 
         const interval = setInterval(async () => {
-          if (deferred.isCanceled()) {
+          const isEnded =
+            deferred.isCanceled() ||
+            (this.percent <= percent && difference < 0) ||
+            (this.percent >= percent && difference > 0)
+
+          if (isEnded) {
             clearInterval(interval)
             resolve()
-
-            return
+          } else {
+            this.handlePercentChange(this.percent + increment)
           }
-
-          this.handlePositionChange(nextPosition)
-
-          const currentPosition = this.getPosition()
-          const isEnded =
-            isCanceled ||
-            (currentPosition <= position && difference < 0) ||
-            (currentPosition >= position && difference > 0)
         }, ms)
       }
     ))
 
     await deferred.then(async () => {
       if (!deferred.isCanceled()) {
-        await this.handlePositionChange(position)
+        await this.handlePercentChange(percent)
         await this.stop()
       }
     })
@@ -131,7 +137,7 @@ export default class Device extends EventEmitter {
   public async stop(): Promise<void> {
     this.handleStateChange(DeviceState.STOPPED)
 
-    if (this.position > 0 && this.position < 100) {
+    if (this.percent > 0 && this.percent < 100) {
       this.log("info", "action: stop")
 
       await this.api.action({
@@ -145,11 +151,11 @@ export default class Device extends EventEmitter {
     this.updateDeferred?.cancel()
   }
 
-  private handlePositionChange(value: number) {
-    this.position = _.clamp(Math.round(value), 0, 100)
+  private handlePercentChange(value: number) {
+    this.percent = _.clamp(Math.round(value), 0, 1)
 
-    this.log("info", "positionChange", this.position)
-    this.emit(DeviceEvent.POSITION_CHANGE, { value: this.position })
+    this.log("info", "percentChange", this.percent)
+    this.emit(DeviceEvent.POSITION_CHANGE)
   }
 
   private handleStateChange(value: DeviceState): void {

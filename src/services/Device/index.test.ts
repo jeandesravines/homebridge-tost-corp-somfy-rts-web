@@ -17,6 +17,7 @@ function createDevice(args?: CreateDeviceArgs) {
     name: "Name 1",
     topic: "topic_1",
     duration: args?.duration,
+    delta: 0.1,
   })
 
   return { api, device }
@@ -50,9 +51,9 @@ describe("getPosition", () => {
   test("it returns the current position", () => {
     const { device } = createDevice()
 
-    device["position"] = 42
+    device["percent"] = 0.42
 
-    expect(device.getPosition()).toBe(42)
+    expect(device.getPosition()).toBe(32)
   })
 })
 
@@ -72,47 +73,33 @@ describe("handleStateChange", () => {
   })
 })
 
-describe("handlePositionChange", () => {
+describe("handlePercentChange", () => {
   test("it should emit event with a rounded evalue", () => {
     const { device } = createDevice()
     const mockHandler = jest.fn()
 
     device.on(DeviceEvent.POSITION_CHANGE, mockHandler)
-    device["handlePositionChange"](42.42)
+    device["handlePercentChange"](0.4242)
 
-    expect(mockHandler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        value: 42,
-      })
-    )
+    expect(mockHandler).toHaveBeenCalled()
   })
 
   test("it should emit event with a value clamped to 100", () => {
     const { device } = createDevice()
     const mockEmit = jest.spyOn(device, "emit")
 
-    device["handlePositionChange"](142.42)
+    device["handlePercentChange"](1.4242)
 
-    expect(mockEmit).toHaveBeenCalledWith(
-      DeviceEvent.POSITION_CHANGE,
-      expect.objectContaining({
-        value: 100,
-      })
-    )
+    expect(mockEmit).toHaveBeenCalledWith(DeviceEvent.POSITION_CHANGE)
   })
 
   test("it should emit event with a value clamped to 0", () => {
     const { device } = createDevice()
     const mockEmit = jest.spyOn(device, "emit")
 
-    device["handlePositionChange"](-42.42)
+    device["handlePercentChange"](-0.4242)
 
-    expect(mockEmit).toHaveBeenCalledWith(
-      DeviceEvent.POSITION_CHANGE,
-      expect.objectContaining({
-        value: 0,
-      })
-    )
+    expect(mockEmit).toHaveBeenCalledWith(DeviceEvent.POSITION_CHANGE)
   })
 })
 
@@ -162,7 +149,7 @@ describe("stop", () => {
       .spyOn(device as any, "handleStateChange")
       .mockReturnValue(undefined)
 
-    device["position"] = 0
+    device["percent"] = 0
 
     await device.stop()
 
@@ -177,7 +164,7 @@ describe("stop", () => {
       .spyOn(device as any, "handleStateChange")
       .mockReturnValue(undefined)
 
-    device["position"] = 100
+    device["percent"] = 1.0
 
     await device.stop()
 
@@ -192,7 +179,7 @@ describe("stop", () => {
       .spyOn(device as any, "handleStateChange")
       .mockReturnValue(undefined)
 
-    device["position"] = 42
+    device["percent"] = 0.42
 
     await device.stop()
 
@@ -213,43 +200,43 @@ describe("setPosition", () => {
     const mockCancelUpdate = jest.spyOn(device as any, "cancelUpdate")
     const mockUp = jest.spyOn(device as any, "up")
     const mockDown = jest.spyOn(device as any, "down")
-    const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
+    const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["position"] = 42
+    device["percent"] = 4.2
     await device.setPosition(42)
 
     expect(mockCancelUpdate).toHaveBeenCalled()
     expect(mockUp).not.toHaveBeenCalled()
     expect(mockDown).not.toHaveBeenCalled()
-    expect(mockHandlePositionChange).not.toHaveBeenCalled()
+    expect(mockHandlePercentChange).not.toHaveBeenCalled()
   })
 
   test("it should decrease even if position === 0", async () => {
     const { device } = createDevice()
     const mockCancelUpdate = jest.spyOn(device as any, "cancelUpdate")
     const mockDown = jest.spyOn(device as any, "down")
-    const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
+    const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["position"] = 0
+    device["percent"] = 0
     await device.setPosition(0)
 
     expect(mockCancelUpdate).toHaveBeenCalled()
     expect(mockDown).toHaveBeenCalled()
-    expect(mockHandlePositionChange).not.toHaveBeenCalled()
+    expect(mockHandlePercentChange).not.toHaveBeenCalled()
   })
 
   test("it should increase even if position === 100", async () => {
     const { device } = createDevice()
     const mockCancelUpdate = jest.spyOn(device as any, "cancelUpdate")
     const mockUp = jest.spyOn(device as any, "up")
-    const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
+    const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["position"] = 100
+    device["percent"] = 1.0
     await device.setPosition(100)
 
     expect(mockCancelUpdate).toHaveBeenCalled()
     expect(mockUp).toHaveBeenCalled()
-    expect(mockHandlePositionChange).not.toHaveBeenCalled()
+    expect(mockHandlePercentChange).not.toHaveBeenCalled()
   })
 
   test("it should increase and update position", async () => {
@@ -257,14 +244,14 @@ describe("setPosition", () => {
     const mockCancelUpdate = jest.spyOn(device as any, "cancelUpdate")
     const mockUp = jest.spyOn(device as any, "up")
     const mockStop = jest.spyOn(device as any, "stop")
-    const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
-    const increment = 5
+    const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
+    const increment = 0.05
 
-    const start = 42
-    const end = 99
+    const start = 0.42
+    const end = 0.99
     const times = Math.ceil((end - start) / increment)
 
-    device["position"] = start
+    device["percent"] = start
     device.setPosition(end)
 
     await new Promise((resolve) => process.nextTick(resolve))
@@ -272,15 +259,15 @@ describe("setPosition", () => {
     await new Promise((resolve) => process.nextTick(resolve))
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(1)
-    expect(mockHandlePositionChange).toHaveBeenCalledTimes(times)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(times, 99)
+    expect(mockHandlePercentChange).toHaveBeenCalledTimes(times)
+    expect(mockHandlePercentChange).toHaveBeenNthCalledWith(times, 0.99)
 
     expect(mockUp).toHaveBeenCalledAfter(mockCancelUpdate as any)
-    expect(mockHandlePositionChange).toHaveBeenCalledAfter(mockUp as any)
-    expect(mockStop).toHaveBeenCalledAfter(mockHandlePositionChange as any)
+    expect(mockHandlePercentChange).toHaveBeenCalledAfter(mockUp as any)
+    expect(mockStop).toHaveBeenCalledAfter(mockHandlePercentChange as any)
 
     for (let i = 1; i < times; i++) {
-      expect(mockHandlePositionChange).toHaveBeenNthCalledWith(i, start + i * increment)
+      expect(mockHandlePercentChange).toHaveBeenNthCalledWith(i, start + i * increment)
     }
   })
 
@@ -290,9 +277,9 @@ describe("setPosition", () => {
     const mockUp = jest.spyOn(device as any, "up")
     const mockDown = jest.spyOn(device as any, "down")
     const mockStop = jest.spyOn(device as any, "stop")
-    const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
+    const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["position"] = 50
+    device["percent"] = 5.0
     device.setPosition(99)
 
     await new Promise((resolve) => process.nextTick(resolve))
@@ -314,21 +301,21 @@ describe("setPosition", () => {
     const invocationCallOrders = [
       mockCancelUpdate.mock.invocationCallOrder[0],
       mockUp.mock.invocationCallOrder[0],
-      mockHandlePositionChange.mock.invocationCallOrder[0],
-      mockHandlePositionChange.mock.invocationCallOrder[1],
-      mockHandlePositionChange.mock.invocationCallOrder[2],
-      mockHandlePositionChange.mock.invocationCallOrder[3],
+      mockHandlePercentChange.mock.invocationCallOrder[0],
+      mockHandlePercentChange.mock.invocationCallOrder[1],
+      mockHandlePercentChange.mock.invocationCallOrder[2],
+      mockHandlePercentChange.mock.invocationCallOrder[3],
       mockCancelUpdate.mock.invocationCallOrder[1],
       mockDown.mock.invocationCallOrder[0],
-      mockHandlePositionChange.mock.invocationCallOrder[4],
-      mockHandlePositionChange.mock.invocationCallOrder[5],
+      mockHandlePercentChange.mock.invocationCallOrder[4],
+      mockHandlePercentChange.mock.invocationCallOrder[5],
       mockStop.mock.invocationCallOrder[0],
     ]
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(2)
-    expect(mockHandlePositionChange).toHaveBeenCalledTimes(7)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(4, 70)
-    expect(mockHandlePositionChange).toHaveBeenNthCalledWith(7, 55)
+    expect(mockHandlePercentChange).toHaveBeenCalledTimes(7)
+    expect(mockHandlePercentChange).toHaveBeenNthCalledWith(4, 0.6)
+    expect(mockHandlePercentChange).toHaveBeenNthCalledWith(7, 0.45)
     expect(mockStop).toHaveBeenCalledTimes(1)
 
     for (let i = 1; i < invocationCallOrders.length; i++) {
@@ -341,9 +328,9 @@ test("it should increase, stop, decrease, stop", async () => {
   const { device } = createDevice()
   const mockCancelUpdate = jest.spyOn(device as any, "cancelUpdate")
   const mockStop = jest.spyOn(device as any, "stop")
-  const mockHandlePositionChange = jest.spyOn(device as any, "handlePositionChange")
+  const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-  device["position"] = 50
+  device["percent"] = 5.0
   device.setPosition(99)
 
   await new Promise((resolve) => process.nextTick(resolve))
@@ -363,8 +350,8 @@ test("it should increase, stop, decrease, stop", async () => {
   await new Promise((resolve) => process.nextTick(resolve))
 
   expect(mockCancelUpdate).toHaveBeenCalledTimes(2)
-  expect(mockHandlePositionChange).toHaveBeenCalledTimes(6)
-  expect(mockHandlePositionChange).toHaveBeenNthCalledWith(3, 65)
-  expect(mockHandlePositionChange).toHaveBeenNthCalledWith(6, 50)
+  expect(mockHandlePercentChange).toHaveBeenCalledTimes(6)
+  expect(mockHandlePercentChange).toHaveBeenNthCalledWith(3, 65)
+  expect(mockHandlePercentChange).toHaveBeenNthCalledWith(6, 50)
   expect(mockStop).toHaveBeenCalledTimes(1)
 })
