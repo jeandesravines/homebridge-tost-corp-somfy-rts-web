@@ -47,7 +47,13 @@ export default class Device extends EventEmitter {
   }
 
   private toPercent(position: number): number {
-    return position >= 1 ? _.round(position / 100, 2) : 0
+    if (position < 1) {
+      return 0
+    } else if (position === 1) {
+      return this.delta
+    }
+
+    return Math.min(1, _.round(position / 100, 2) + this.delta)
   }
 
   public getState(): DeviceState {
@@ -74,7 +80,7 @@ export default class Device extends EventEmitter {
 
     if (percent === 0) {
       handler = this.down
-    } else if (percent === 100) {
+    } else if (percent === 1) {
       handler = this.up
     } else if (difference !== 0) {
       handler = difference > 0 ? this.up : this.down
@@ -137,7 +143,7 @@ export default class Device extends EventEmitter {
   public async stop(): Promise<void> {
     this.handleStateChange(DeviceState.STOPPED)
 
-    if (this.percent > 0 && this.percent < 100) {
+    if (this.percent > 0 && this.percent < 1) {
       this.log("info", "action: stop")
 
       await this.api.action({

@@ -4,6 +4,7 @@ import { DeviceEvent, DeviceState } from "./types"
 
 interface CreateDeviceArgs {
   duration?: number
+  delta?: number
 }
 
 function createDevice(args?: CreateDeviceArgs) {
@@ -17,7 +18,7 @@ function createDevice(args?: CreateDeviceArgs) {
     name: "Name 1",
     topic: "topic_1",
     duration: args?.duration,
-    delta: 0.1,
+    delta: args?.delta ?? 0.1,
   })
 
   return { api, device }
@@ -34,6 +35,87 @@ describe("constructor", () => {
     const { device } = createDevice({ duration: 10_000 })
 
     expect(device["duration"]).toBe(10_000)
+  })
+})
+
+describe("toPercent", () => {
+  test("it should returns 0 - p < 1", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](0.9)
+
+    expect(result).toBe(0)
+  })
+
+  test("it should returns 0 - p === 0", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](0)
+
+    expect(result).toBe(0)
+  })
+
+  test("it should returns 1 - p === 100", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](100)
+
+    expect(result).toBe(1)
+  })
+
+  test("it should returns 1 - p > 100 - delta * 100", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](99.1)
+
+    expect(result).toBe(1)
+  })
+
+  test("it should returns the delta - p === 1", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](1)
+
+    expect(result).toBe(0.1)
+  })
+
+  test("it should returns the position minus the delta", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPercent"](42)
+
+    expect(result).toBe(0.52)
+  })
+})
+
+describe("toPosition", () => {
+  test("it should returns 0 - p === O", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPosition"](0)
+
+    expect(result).toBe(0)
+  })
+
+  test("it should returns 100 - p === 1", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPosition"](1)
+
+    expect(result).toBe(100)
+  })
+
+  test("it should returns 1 - p < delta", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPosition"](0.09)
+
+    expect(result).toBe(1)
+  })
+
+  test("it should returns 1 - p === delta", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPosition"](0.1)
+
+    expect(result).toBe(1)
+  })
+
+  test("it should returns p plus delta - p > delta", () => {
+    const { device } = createDevice({ delta: 0.1 })
+    const result = device["toPosition"](0.42)
+
+    expect(result).toBe(32)
   })
 })
 
@@ -202,7 +284,7 @@ describe("setPosition", () => {
     const mockDown = jest.spyOn(device as any, "down")
     const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["percent"] = 4.2
+    device["percent"] = 0.52
     await device.setPosition(42)
 
     expect(mockCancelUpdate).toHaveBeenCalled()
@@ -247,12 +329,12 @@ describe("setPosition", () => {
     const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
     const increment = 0.05
 
-    const start = 0.42
+    const start = 0.52
     const end = 0.99
     const times = Math.ceil((end - start) / increment)
 
     device["percent"] = start
-    device.setPosition(end)
+    device.setPosition(end * 100)
 
     await new Promise((resolve) => process.nextTick(resolve))
     jest.advanceTimersByTime(12000)
@@ -260,7 +342,7 @@ describe("setPosition", () => {
 
     expect(mockCancelUpdate).toHaveBeenCalledTimes(1)
     expect(mockHandlePercentChange).toHaveBeenCalledTimes(times)
-    expect(mockHandlePercentChange).toHaveBeenNthCalledWith(times, 0.99)
+    expect(mockHandlePercentChange).toHaveBeenNthCalledWith(times, end)
 
     expect(mockUp).toHaveBeenCalledAfter(mockCancelUpdate as any)
     expect(mockHandlePercentChange).toHaveBeenCalledAfter(mockUp as any)
@@ -279,7 +361,7 @@ describe("setPosition", () => {
     const mockStop = jest.spyOn(device as any, "stop")
     const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-    device["percent"] = 5.0
+    device["percent"] = 0.5
     device.setPosition(99)
 
     await new Promise((resolve) => process.nextTick(resolve))
@@ -330,7 +412,7 @@ test("it should increase, stop, decrease, stop", async () => {
   const mockStop = jest.spyOn(device as any, "stop")
   const mockHandlePercentChange = jest.spyOn(device as any, "handlePercentChange")
 
-  device["percent"] = 5.0
+  device["percent"] = 0.5
   device.setPosition(99)
 
   await new Promise((resolve) => process.nextTick(resolve))
