@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- feat(Device): Allow to set a "delta" used to ignore the starting phase
+- feat(Device): Allow to set a "durationDelta" to correct the position offset caused by the starting phase
 
 ## [1.1.8] - 2022-07-25
 

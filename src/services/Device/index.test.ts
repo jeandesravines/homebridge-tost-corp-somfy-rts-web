@@ -1,4 +1,5 @@
 import Device from "."
+import * as configuration from "../../configuration"
 import { jestAdvanceTimersByTime } from "../../../tests/helpers/jest/timers"
 import ApiClient from "../ApiClient"
 import { DeviceEvent, DeviceState } from "./types"
@@ -13,7 +14,7 @@ function createDevice(args?: CreateDeviceArgs) {
   jest.spyOn(api, "init").mockResolvedValue(undefined)
   jest.spyOn(api, "action").mockResolvedValue(undefined)
 
-  const duration = args?.duration || 20_000
+  const duration = args?.duration || configuration.somfy.defaultDuration
   const durationDelta = duration * 0.1
 
   const device = new Device({
@@ -32,6 +33,8 @@ describe("constructor", () => {
     const { device } = createDevice()
 
     expect(device["duration"]).toBe(20_000)
+    expect(device["delta"]).toBe(10)
+    expect(device.getPosition()).toBe(100)
   })
 
   test("it use the given duration", () => {

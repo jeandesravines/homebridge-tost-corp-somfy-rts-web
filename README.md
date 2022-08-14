@@ -35,13 +35,13 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
   "platforms": [
     {
       "platform": "TOSTCorpSomfyRTSWeb",
-      "id": "<your_tost_corp_device_id>",
+      "id": "<your_tost_corp_device_id>"
     }
   ]
 }
 ```
 
-#### Custom (for difference between devices)
+#### Advanced (for difference between devices)
 
 ```json
 {
@@ -52,12 +52,12 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
       "devices": [
         {
           "topic": "<accessory_topic_1>",
-          "duration": 10000,
+          "duration": 10000
         },
         {
           "topic": "<accessory_topic_2>",
           "duration": 20000,
-          "delta": 2000
+          "durationDelta": 2000
         },
         {
           "topic": "<accessory_topic_3>",
@@ -94,7 +94,7 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
       - required: `false`
       - description: Duration (in milliseconds) of the total opening/closing phase
       - default: `20_000`
-    - `delta`:
+    - `durationDelta`:
       - type: `number`
       - required: `false`
       - description: Duration (in milliseconds) of the starting phase

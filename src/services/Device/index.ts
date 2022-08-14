@@ -21,7 +21,7 @@ export default class Device extends EventEmitter {
   public readonly delta: number
   private readonly api: ApiClient
 
-  private percent = this.toPercent(configuration.somfy.initialPosition)
+  private percent: number
   private state = DeviceState.STOPPED
   private updateDeferred?: CancelablePromise
 
@@ -37,6 +37,7 @@ export default class Device extends EventEmitter {
     this.topic = args.topic
     this.duration = duration
     this.delta = delta
+    this.percent = this.toPercent(configuration.somfy.initialPosition)
   }
 
   public getPosition(): number {
