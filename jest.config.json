@@ -1,7 +1,7 @@
 {
   "collectCoverageFrom": ["src/**/*.ts"],
   "fakeTimers": {
-    "doNotFake": ["nextTick"]
+    "enableGlobally": true
   },
   "preset": "ts-jest",
   "setupFilesAfterEnv": ["jest-extended/all", "<rootDir>/jest.setup.ts"],

@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.18] - 2022-07-25
+## [1.1.9] - 2022-08-14
+
+### Changed
+
+- feat(Device): Allow to set a "delta" used to ignore the starting phase
+
+## [1.1.8] - 2022-07-25
 
 ### Fixed
 
@@ -16,21 +22,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - chore(Dependencies): Upgrade dependencies
-
-## [1.1.15] - 2022-06-12
-
-### Changed
-
-- chore(Dependencies): Upgrade dependencies
-
-## [1.1.13] - 2022-06-09
-
-### Added
-
-- feat(Logger): Use Homebridge's logger
-
-## [1.1.12] - 2022-01-03
-
-### Fixed
-
-- fix(Position): Avoid "pending" status

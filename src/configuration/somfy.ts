@@ -1,5 +1,5 @@
 export default {
   defaultDuration: 20_000,
-  defaultDelta: 0.1,
-  initialPosition: 1,
+  defaultDurationDelta: 2_000,
+  initialPosition: 100,
 }

@@ -1,6 +1,8 @@
 import concurrency from "."
 
 describe("concurrency", () => {
+  jest.useRealTimers()
+
   test("it create a function", () => {
     const withConcurrency = concurrency()
 

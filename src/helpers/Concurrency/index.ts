@@ -7,7 +7,7 @@ export default function concurrency<T = void>(): ConcurrencyHandler<T> {
   return (handler: Handler<T>): Promise<T> => {
     if (!mutex) {
       mutex = Promise.resolve()
-        .then(() => handler())
+        .then(handler)
         .finally(() => {
           mutex = null
         })

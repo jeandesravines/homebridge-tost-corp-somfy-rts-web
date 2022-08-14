@@ -28,6 +28,21 @@ So, you have to complete [the TOST Corp's tutorial](https://www.tostcorp.com/plu
 
 In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key named `id`.
 
+#### Basic
+
+```json
+{
+  "platforms": [
+    {
+      "platform": "TOSTCorpSomfyRTSWeb",
+      "id": "<your_tost_corp_device_id>",
+    }
+  ]
+}
+```
+
+#### Custom (for difference between devices)
+
 ```json
 {
   "platforms": [
@@ -36,9 +51,17 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
       "id": "<your_tost_corp_device_id>",
       "devices": [
         {
-          "topic": "<your_accessory_topic>",
+          "topic": "<accessory_topic_1>",
           "duration": 10000,
-          "excluded": false
+        },
+        {
+          "topic": "<accessory_topic_2>",
+          "duration": 20000,
+          "delta": 2000
+        },
+        {
+          "topic": "<accessory_topic_3>",
+          "excluded": true
         }
       ]
     }
@@ -69,8 +92,13 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
     - `duration`:
       - type: `number`
       - required: `false`
-      - description: Duration of the opening/closing
+      - description: Duration (in milliseconds) of the total opening/closing phase
       - default: `20_000`
+    - `delta`:
+      - type: `number`
+      - required: `false`
+      - description: Duration (in milliseconds) of the starting phase
+      - default: `2_000`
     - `excluded`:
       - type: `boolean`
       - required: `false`

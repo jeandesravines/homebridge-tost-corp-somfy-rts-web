@@ -11,7 +11,7 @@ interface DeviceConstructorArgs {
   name: string
   topic: string
   duration?: number
-  delta?: number
+  durationDelta?: number
 }
 
 export default class Device extends EventEmitter {
@@ -28,11 +28,15 @@ export default class Device extends EventEmitter {
   constructor(args: DeviceConstructorArgs) {
     super()
 
+    const duration = args.duration ?? configuration.somfy.defaultDuration
+    const durationDelta = args.durationDelta ?? configuration.somfy.defaultDurationDelta
+    const delta = duration / durationDelta
+
     this.api = args.api
     this.name = args.name
     this.topic = args.topic
-    this.duration = args.duration ?? configuration.somfy.defaultDuration
-    this.delta = args.delta ?? configuration.somfy.defaultDelta
+    this.duration = duration
+    this.delta = delta
   }
 
   public getPosition(): number {
@@ -40,10 +44,13 @@ export default class Device extends EventEmitter {
   }
 
   private toPosition(percent: number): number {
-    const { delta } = this
-    const value = percent === 0 || percent === 1 ? percent : Math.max(0.01, percent - delta)
+    if (percent === 0 || percent === 100) {
+      return percent
+    } else if (percent <= this.delta) {
+      return 1
+    }
 
-    return Math.round(value * 100)
+    return percent - this.delta
   }
 
   private toPercent(position: number): number {
@@ -53,7 +60,7 @@ export default class Device extends EventEmitter {
       return this.delta
     }
 
-    return Math.min(1, _.round(position / 100, 2) + this.delta)
+    return Math.min(100, position + this.delta)
   }
 
   public getState(): DeviceState {
@@ -74,13 +81,13 @@ export default class Device extends EventEmitter {
     const difference = percent - this.percent
     const direction = difference > 0 ? 1 : -1
     const ms = 1000
-    const increment = (ms * direction) / this.duration
+    const increment = (100 * ms * direction) / this.duration
 
     let handler: () => Promise<void>
 
     if (percent === 0) {
       handler = this.down
-    } else if (percent === 1) {
+    } else if (percent === 100) {
       handler = this.up
     } else if (difference !== 0) {
       handler = difference > 0 ? this.up : this.down
@@ -96,17 +103,18 @@ export default class Device extends EventEmitter {
       async (resolve: () => void) => {
         await handler.apply(this)
 
-        const interval = setInterval(async () => {
+        const interval = setInterval(() => {
+          const nextValue = this.percent + increment
           const isEnded =
             deferred.isCanceled() ||
-            (this.percent <= percent && difference < 0) ||
-            (this.percent >= percent && difference > 0)
+            (nextValue < percent && difference < 0) ||
+            (nextValue > percent && difference > 0)
 
           if (isEnded) {
             clearInterval(interval)
             resolve()
           } else {
-            this.handlePercentChange(this.percent + increment)
+            this.handlePercentChange(nextValue)
           }
         }, ms)
       }
@@ -143,7 +151,7 @@ export default class Device extends EventEmitter {
   public async stop(): Promise<void> {
     this.handleStateChange(DeviceState.STOPPED)
 
-    if (this.percent > 0 && this.percent < 1) {
+    if (this.percent > 0 && this.percent < 100) {
       this.log("info", "action: stop")
 
       await this.api.action({
@@ -158,7 +166,7 @@ export default class Device extends EventEmitter {
   }
 
   private handlePercentChange(value: number) {
-    this.percent = _.clamp(Math.round(value), 0, 1)
+    this.percent = _.clamp(value, 0, 100)
 
     this.log("info", "percentChange", this.percent)
     this.emit(DeviceEvent.POSITION_CHANGE)
