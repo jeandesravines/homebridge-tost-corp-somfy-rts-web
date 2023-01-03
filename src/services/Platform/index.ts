@@ -8,13 +8,13 @@ import Device from "../Device"
 
 interface PlatformConfiguration extends PlatformConfig {
   id: string
-  devices?: PlatformConfigurationDevice[]
+  devices: PlatformConfigurationDevice[]
 }
 
 interface PlatformConfigurationDevice {
   topic: string
+  name?: string
   duration?: number
-  excluded?: boolean
 }
 
 export default class Platform implements DynamicPlatformPlugin {
@@ -43,33 +43,21 @@ export default class Platform implements DynamicPlatformPlugin {
 
   private async syncAccessories(): Promise<void> {
     const { pluginName, platformName } = this
-    const devices = await this.api.getDevices()
-    const accessories: PlatformAccessory<AccessoryContext>[] = []
+    const accessories: PlatformAccessory<AccessoryContext>[] = this.config.devices?.map(
+      (device) => {
+        const { topic, name, duration } = device
 
-    devices.forEach((informations) => {
-      const { name, topic } = informations
-      const { duration, excluded } = this.getConfigurationDeviceByTopic(topic) ?? {}
-
-      if (excluded) {
-        return
+        return Accessory.getAccessory({
+          homebridge: this.homebridge,
+          device: new Device({ api: this.api, topic, name, duration }),
+          accessory: this.accessories.find(({ context }) => context.topic === topic),
+        })
       }
-
-      const device = new Device({ api: this.api, name, topic, duration })
-      const existing = this.accessories.find(({ context }) => {
-        return context.topic === topic
-      })
-
-      const accessory = new Accessory({
-        device,
-        accessory: existing,
-        homebridge: this.homebridge,
-      })
-
-      accessories.push(accessory.accessory)
-    })
+    )
 
     const newest = _.differenceBy(accessories, this.accessories, "context.topic")
     const outdated = _.differenceBy(this.accessories, accessories, "context.topic")
+    const updated = _.intersectionBy(accessories, this.accessories, "context.topic")
 
     if (newest.length) {
       this.homebridge.registerPlatformAccessories(pluginName, platformName, newest)
@@ -79,16 +67,16 @@ export default class Platform implements DynamicPlatformPlugin {
       this.homebridge.unregisterPlatformAccessories(pluginName, platformName, outdated)
     }
 
-    for (const { context } of outdated) {
-      this.accessories.splice(
-        this.accessories.findIndex((accessory) => {
-          return accessory.context.topic === context.topic
-        })
-      )
+    if (updated.length) {
+      this.homebridge.updatePlatformAccessories(updated)
     }
-  }
 
-  private getConfigurationDeviceByTopic(topic: string): PlatformConfigurationDevice | null {
-    return this.config.devices?.find((current) => current.topic === topic) ?? null
+    // for (const { context } of outdated) {
+    //   this.accessories.splice(
+    //     this.accessories.findIndex((accessory) => {
+    //       return accessory.context.topic === context.topic
+    //     })
+    //   )
+    // }
   }
 }

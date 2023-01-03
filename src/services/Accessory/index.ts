@@ -14,28 +14,32 @@ export default class Accessory {
   private readonly service: Service
   private readonly device: Device
   private readonly homebridge: API
-  private targetPosition = configuration.somfy.initialPosition
+  private position = configuration.somfy.initialPosition
 
   public readonly accessory: PlatformAccessory<AccessoryContext>
 
   constructor(args: ConstructorArgs) {
     const { homebridge, device, accessory } = args
-    const { Service, Characteristic } = homebridge.hap
-    const { topic } = device
+
     const { platformName } = configuration.platform
+    const { Service, Characteristic } = homebridge.hap
+    const { topic, name } = device
+
     const uuid = homebridge.hap.uuid.generate(platformName + "." + topic)
-    const name = accessory?.displayName || device.name
 
     this.device = device
     this.homebridge = homebridge
-    this.accessory = accessory ?? new homebridge.platformAccessory(name, uuid)
-    this.accessory.context.topic = this.device.topic
+
+    this.accessory = accessory ?? new this.homebridge.platformAccessory(name, uuid)
+    this.accessory.context.topic = topic
+    this.accessory.displayName = name
+
+    homebridge.updatePlatformAccessories
 
     this.accessory
       .getService(Service.AccessoryInformation)
       ?.setCharacteristic(Characteristic.Manufacturer, "Somfy")
-      .setCharacteristic(Characteristic.SerialNumber, "Unknown")
-      .setCharacteristic(Characteristic.Model, "RTS Compatible")
+      .setCharacteristic(Characteristic.SerialNumber, topic)
       .setCharacteristic(Characteristic.FirmwareRevision, "Unknown")
 
     this.service =
@@ -59,9 +63,11 @@ export default class Accessory {
     this.device.on(DeviceEvent.STATE_CHANGE, () => this.handlePositionStateChange())
   }
 
-  private getCurrentPosition(): number {
-    this.device.touch()
+  static getAccessory(args: ConstructorArgs): PlatformAccessory<AccessoryContext> {
+    return new Accessory(args).accessory
+  }
 
+  private getCurrentPosition(): number {
     return this.device.getPosition()
   }
 
@@ -92,11 +98,11 @@ export default class Accessory {
   }
 
   private getTargetPosition(): number {
-    return this.targetPosition
+    return this.position
   }
 
   private async setTargetPosition(value: CharacteristicValue) {
-    this.targetPosition = value as number
+    this.position = value as number
     this.device.setPosition(value as number)
   }
 }

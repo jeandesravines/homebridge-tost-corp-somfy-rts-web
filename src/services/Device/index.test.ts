@@ -4,18 +4,18 @@ import { DeviceEvent, DeviceState } from "./types"
 
 interface CreateDeviceArgs {
   duration?: number
+  name?: string
 }
 
 function createDevice(args?: CreateDeviceArgs) {
   const api = new ApiClient({ id: "DEVICE_ID" })
 
-  jest.spyOn(api, "init").mockResolvedValue(undefined)
   jest.spyOn(api, "action").mockResolvedValue(undefined)
 
   const device = new Device({
     api,
-    name: "Name 1",
     topic: "topic_1",
+    name: args?.name,
     duration: args?.duration,
   })
 
@@ -23,6 +23,18 @@ function createDevice(args?: CreateDeviceArgs) {
 }
 
 describe("constructor", () => {
+  test("it use the default name", () => {
+    const { device } = createDevice()
+
+    expect(device["name"]).toBe("Topic 1")
+  })
+
+  test("it use the given name", () => {
+    const { device } = createDevice({ name: "Name 1" })
+
+    expect(device["name"]).toBe("Name 1")
+  })
+
   test("it use the default duration", () => {
     const { device } = createDevice()
 

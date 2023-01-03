@@ -26,7 +26,7 @@ So, you have to complete [the TOST Corp's tutorial](https://www.tostcorp.com/plu
 
 ### Homebridge Configuration
 
-In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID with the key named `id`.
+In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform (in the existing `platforms` node) to specify your TOST Corp Device ID (with the key named `id`) and your devices.
 
 ```json
 {
@@ -36,9 +36,12 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
       "id": "<your_tost_corp_device_id>",
       "devices": [
         {
-          "topic": "<your_accessory_topic>",
-          "duration": 10000,
-          "excluded": false
+          "topic": "<topic_room_1_blind_1>",
+          "name": "Room 1 - Blind 1",
+          "duration": 10000
+        },
+        {
+          "topic": "<topic_room_1_blind_2>"
         }
       ]
     }
@@ -59,23 +62,22 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
   - Description: TOST Corp device's ID
 - `devices`:
   - type: `array`
-  - required: `false`
+  - required: `true`
   - description: Accessories to customize
   - items:
     - `topic`:
       - type: `string`
       - required: `true`
       - description: Accessory's topic
+    - `name`:
+      - type: `string`
+      - required: `false`
+      - description: Accessory's name
     - `duration`:
       - type: `number`
       - required: `false`
-      - description: Duration of the opening/closing
-      - default: `20_000`
-    - `excluded`:
-      - type: `boolean`
-      - required: `false`
-      - description: true if the device has to be ignore
-      - default: `false`
+      - description: Duration (in milliseconds) of the total opening/closing phase
+      - default: `20000`
 
 ## Contributors
 

@@ -1,134 +1,33 @@
-import axios, { AxiosInstance, AxiosResponse, Method } from "axios"
-import { JSDOM } from "jsdom"
 import * as configuration from "../../configuration"
-import concurrency from "../../helpers/Concurrency"
 
 interface ApiClientConstructorArgs {
   id: string
 }
 
-interface ApiClientRequestArgs {
-  method?: Method
-  url?: string
-  data?: Record<string, string | number | null>
-}
-
 interface ApiClientActionArgs {
-  action: string
+  action: "up" | "down" | "stop"
   topic: string
-}
-
-interface ApiDevice {
-  topic: string
-  name: string
 }
 
 export default class ApiClient {
-  private readonly deviceId: string
-  private readonly axios: AxiosInstance
-  private sessionId?: string
-  private sessionDate?: number
-  private concurrency = concurrency()
+  private readonly id: string
 
   constructor(args: ApiClientConstructorArgs) {
-    this.deviceId = args.id
-    this.axios = axios.create({
-      baseURL: configuration.api.url,
-    })
+    this.id = args.id
   }
 
   public async action(args: ApiClientActionArgs): Promise<void> {
     const { action, topic } = args
+    const { url, path, service } = configuration.api
+    const mapping: Record<typeof action, string> = { up: "u", down: "d", stop: "s" }
 
-    await this.init()
-    await this.request({
-      method: "POST",
-      url: configuration.api.paths.server,
-      data: {
-        [action]: topic,
-      },
-    })
-  }
-
-  private hasValidSession(): boolean {
-    if (!this.sessionId || !this.sessionDate) {
-      return false
-    }
-
-    return Date.now() - this.sessionDate < configuration.api.sessionTTL
-  }
-
-  async init(): Promise<void> {
-    return this.concurrency(async () => {
-      if (this.hasValidSession()) {
-        return
-      }
-
-      delete this.sessionId
-      delete this.sessionDate
-
-      const { headers } = await this.request({
-        method: "GET",
-        url: configuration.api.paths.control,
-      })
-
-      const cookies = headers["set-cookie"]?.join(", ")
-      const sessionId = cookies?.match(/PHPSESSID=(\w+);/)?.[1]
-
-      if (sessionId) {
-        this.sessionId = sessionId
-        this.sessionDate = Date.now()
-      }
-    })
-  }
-
-  public async getDevices(): Promise<ApiDevice[]> {
-    await this.init()
-
-    const { data } = await this.request({
-      method: "GET",
-      url: configuration.api.paths.control,
+    const params = new URLSearchParams({
+      device_id: this.id,
+      topic,
+      command: mapping[action],
+      service,
     })
 
-    const dom = new JSDOM(data)
-    const { document } = dom.window
-
-    const selector = ".equipements .table_field"
-    const rows = Array.from<HTMLElement>(document.querySelectorAll(selector))
-    const devices = rows.map((row) => {
-      const input = row.querySelector("input[type=checkbox][id]")
-
-      return {
-        topic: input?.id as string,
-        name: row.textContent?.trim() as string,
-      }
-    })
-
-    return devices.filter(({ topic }) => {
-      return topic
-    })
-  }
-
-  private async request(args: ApiClientRequestArgs): Promise<AxiosResponse> {
-    const { url, method, data } = args
-    const rawData = new URLSearchParams(data as Record<string, string>).toString()
-    const headers: Record<string, string> = {
-      Cookie: `cookie-consent=1; device_id=${this.deviceId}`,
-    }
-
-    if (this.sessionId) {
-      headers.Cookie += `; PHPSESSID=${this.sessionId}`
-    }
-
-    if (method === "POST") {
-      headers["Content-Type"] = "application/x-www-form-urlencoded"
-    }
-
-    return this.axios.request({
-      method,
-      url,
-      headers,
-      data: rawData,
-    })
+    await fetch(`${url}${path}?${params}`)
   }
 }
