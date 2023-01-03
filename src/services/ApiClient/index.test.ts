@@ -1,4 +1,3 @@
-import fetch from "node-fetch"
 import ApiClient from "."
 
 function createApiClient() {
