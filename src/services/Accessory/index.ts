@@ -39,8 +39,7 @@ export default class Accessory {
     this.accessory
       .getService(Service.AccessoryInformation)
       ?.setCharacteristic(Characteristic.Manufacturer, "Somfy")
-      .setCharacteristic(Characteristic.SerialNumber, `Topic: ${topic}`)
-      .setCharacteristic(Characteristic.Model, "RTS Compatible")
+      .setCharacteristic(Characteristic.SerialNumber, topic)
       .setCharacteristic(Characteristic.FirmwareRevision, "Unknown")
 
     this.service =
