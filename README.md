@@ -76,8 +76,8 @@ In the Homebridge's `config.json` file, add a new `TOSTCorpSomfyRTSWeb` platform
     - `duration`:
       - type: `number`
       - required: `false`
-      - description: Duration of the opening/closing
-      - default: `20_000`
+      - description: Duration (in milliseconds) of the total opening/closing phase
+      - default: `20000`
 
 ## Contributors
 

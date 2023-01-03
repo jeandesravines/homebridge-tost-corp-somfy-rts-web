@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-01-02
+
+### Changed
+
+- (Breaking) feat(Configuration): Remove auto-discover (`devices` is now required in the Homebridge's configuration)
+- feat(Configuration): Remove `devices.*.excluded`
+- refactor(Request): Use the Webhook's commands instead of the REST's
+
+### Added
+
+- feat(Configuration): The device's name overrides the accessory's name
+
+### Doc
+
+- doc(Configuration): Mark `devices` as required
+
 ## [1.1.18] - 2022-07-25
 
 ### Fixed
