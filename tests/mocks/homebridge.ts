@@ -65,4 +65,8 @@ export class HomebridgeAPI extends EventEmitter {
   unregisterPlatformAccessories(): void {
     return
   }
+
+  updatePlatformAccessories(): void {
+    return
+  }
 }
