@@ -14,8 +14,9 @@
       },
       "devices": {
         "type": "array",
+        "rrequired": true,
         "title": "Devices list",
-        "description": "TOST Corp device's to customize",
+        "description": "RTS devices to control",
         "items": {
           "type": "object",
           "properties": {
@@ -24,15 +25,14 @@
               "required": true,
               "title": "Topic"
             },
+            "name": {
+              "type": "string",
+              "title": "Display name"
+            },
             "duration": {
               "type": "number",
               "title": "Duration",
               "description": "Duration (in milliseconds)"
-            },
-            "excluded": {
-              "type": "boolean",
-              "title": "Excluded",
-              "description": "true if the device has to be ignored"
             }
           }
         }
@@ -43,7 +43,7 @@
     "id",
     {
       "type": "fieldset",
-      "title": "Custom Device",
+      "title": "Devices",
       "expandable": true,
       "expanded": false,
       "items": [
@@ -53,8 +53,8 @@
           "type": "array",
           "items": [
             "devices[].topic",
-            "devices[].duration",
-            "devices[].excluded"
+            "devices[].name",
+            "devices[].duration"
           ]
         }
       ]
