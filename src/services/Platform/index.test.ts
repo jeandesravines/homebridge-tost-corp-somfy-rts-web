@@ -4,8 +4,8 @@ import Platform from "."
 interface CreatePlatformArgs {
   devices?: Array<{
     topic: string
+    name?: string
     duration?: number
-    excluded?: boolean
   }>
 }
 
@@ -20,7 +20,7 @@ function createPlatform(args?: CreatePlatformArgs) {
 
   const platform = new Platform(logger, config, homebridge)
 
-  const createPlatformAccessory = (index: number) => {
+  const createAccessory = (index: number) => {
     return Object.assign(new homebridge.platformAccessory("Name " + index, "uuid-" + index), {
       context: {
         topic: "topic_" + index,
@@ -28,22 +28,13 @@ function createPlatform(args?: CreatePlatformArgs) {
     })
   }
 
-  const createApiDevice = (index: number) => {
-    return {
-      name: "Name " + index,
-      topic: "topic_" + index,
-    }
-  }
-
-  return { platform, homebridge, createApiDevice, createPlatformAccessory }
+  return { platform, homebridge, createAccessory }
 }
 
 describe("constructor", () => {
   test("on didFinishLaunching", () => {
     const { platform, homebridge } = createPlatform()
     const mockSyncDevices = jest.spyOn(platform as any, "syncAccessories")
-
-    jest.spyOn(platform["api"] as any, "getDevices").mockResolvedValue([])
 
     homebridge.emit("didFinishLaunching")
 
@@ -53,39 +44,16 @@ describe("constructor", () => {
 
 describe("configureAccessory", () => {
   test("it should add the accessory", () => {
-    const { platform, createPlatformAccessory } = createPlatform()
-    const accessory = createPlatformAccessory(1)
+    const { platform } = createPlatform()
+    const accessory = {
+      context: {
+        topic: "topic_1",
+      },
+    } as any
 
     platform["configureAccessory"](accessory)
 
     expect(platform.accessories).toEqual([accessory])
-  })
-})
-
-describe("getConfigurationDeviceByTopic", () => {
-  test("it should return null", () => {
-    const { platform } = createPlatform()
-    const device = platform["getConfigurationDeviceByTopic"]("topic_1")
-
-    expect(device).toEqual(null)
-  })
-
-  test("it should return a device", () => {
-    const { platform } = createPlatform({
-      devices: [
-        {
-          topic: "topic_1",
-          duration: 10_000,
-        },
-      ],
-    })
-
-    const device = platform["getConfigurationDeviceByTopic"]("topic_1")
-
-    expect(device).toEqual({
-      topic: "topic_1",
-      duration: 10_000,
-    })
   })
 })
 
@@ -94,105 +62,31 @@ describe("syncAccessories", () => {
     const { platform, homebridge } = createPlatform()
     const mockRegisterAccessories = jest.spyOn(homebridge, "registerPlatformAccessories")
     const mockUnregisterAccessories = jest.spyOn(homebridge, "unregisterPlatformAccessories")
-
-    jest.spyOn(platform["api"] as any, "getDevices").mockResolvedValue([])
+    const mockUpdateAccessories = jest.spyOn(homebridge, "updatePlatformAccessories")
 
     await platform["syncAccessories"]()
 
     expect(platform["accessories"]).toEqual([])
     expect(mockRegisterAccessories).not.toHaveBeenCalled()
     expect(mockUnregisterAccessories).not.toHaveBeenCalled()
-  })
-
-  test("it should do nothing; no new accessory", async () => {
-    const { platform, homebridge, createPlatformAccessory, createApiDevice } = createPlatform()
-    const mockRegisterAccessories = jest.spyOn(homebridge, "registerPlatformAccessories")
-    const mockUnregisterAccessories = jest.spyOn(homebridge, "unregisterPlatformAccessories")
-    const mockGetConfigurationDeviceByTopic = jest.spyOn(
-      platform as any,
-      "getConfigurationDeviceByTopic"
-    )
-
-    const accessories = [createPlatformAccessory(1), createPlatformAccessory(2)]
-
-    jest
-      .spyOn(platform["api"] as any, "getDevices")
-      .mockResolvedValue([createApiDevice(1), createApiDevice(2)])
-
-    Object.assign(platform, {
-      accessories: accessories.slice(0),
-    })
-
-    await platform["syncAccessories"]()
-
-    expect(mockRegisterAccessories).not.toHaveBeenCalled()
-    expect(mockUnregisterAccessories).not.toHaveBeenCalled()
-
-    expect(mockGetConfigurationDeviceByTopic).toHaveBeenNthCalledWith(1, "topic_1")
-    expect(mockGetConfigurationDeviceByTopic).toHaveBeenNthCalledWith(2, "topic_2")
+    expect(mockUpdateAccessories).not.toHaveBeenCalled()
   })
 
   test("it should sync accessories", async () => {
-    const { platform, homebridge, createApiDevice, createPlatformAccessory } = createPlatform()
-    const mockRegisterAccessories = jest.spyOn(homebridge, "registerPlatformAccessories")
-    const mockUnregisterAccessories = jest.spyOn(homebridge, "unregisterPlatformAccessories")
-    const accessories = [createPlatformAccessory(1), createPlatformAccessory(2)]
-
-    jest
-      .spyOn(platform["api"] as any, "getDevices")
-      .mockResolvedValue([createApiDevice(1), createApiDevice(3), createApiDevice(4)])
-
-    Object.assign(platform, {
-      accessories: accessories.slice(0),
-    })
-
-    await platform["syncAccessories"]()
-
-    expect(mockRegisterAccessories).toHaveBeenCalledWith(
-      "homebridge-tost-corp-somfy-rts-web",
-      "TOSTCorpSomfyRTSWeb",
-      [
-        expect.objectContaining({
-          displayName: "Name 3",
-          context: {
-            topic: "topic_3",
-          },
-        }),
-        expect.objectContaining({
-          displayName: "Name 4",
-          context: {
-            topic: "topic_4",
-          },
-        }),
-      ]
-    )
-
-    expect(mockUnregisterAccessories).toHaveBeenCalledWith(
-      "homebridge-tost-corp-somfy-rts-web",
-      "TOSTCorpSomfyRTSWeb",
-      [accessories[1]]
-    )
-  })
-  test("it should exclude one accessory", async () => {
-    const { platform, homebridge, createApiDevice, createPlatformAccessory } = createPlatform({
+    const { platform, homebridge, createAccessory } = createPlatform({
       devices: [
-        {
-          topic: "topic_3",
-          excluded: true,
-        },
+        { topic: "topic_1", name: "Name 1 - Updated" },
+        { topic: "topic_3", name: "Name 3" },
+        { topic: "topic_4", name: "Name 4" },
       ],
     })
 
     const mockRegisterAccessories = jest.spyOn(homebridge, "registerPlatformAccessories")
     const mockUnregisterAccessories = jest.spyOn(homebridge, "unregisterPlatformAccessories")
-    const accessories = [createPlatformAccessory(1), createPlatformAccessory(2)]
-
-    jest
-      .spyOn(platform["api"] as any, "getDevices")
-      .mockResolvedValue([createApiDevice(1), createApiDevice(3), createApiDevice(4)])
+    const mockUpdateAccessories = jest.spyOn(homebridge, "updatePlatformAccessories")
 
     Object.assign(platform, {
-      accessories: accessories.slice(0),
+      accessories: [createAccessory(1), createAccessory(2)],
     })
 
     await platform["syncAccessories"]()
@@ -201,19 +95,19 @@ describe("syncAccessories", () => {
       "homebridge-tost-corp-somfy-rts-web",
       "TOSTCorpSomfyRTSWeb",
       [
-        expect.objectContaining({
-          displayName: "Name 4",
-          context: {
-            topic: "topic_4",
-          },
-        }),
+        expect.objectContaining({ displayName: "Name 3", context: { topic: "topic_3" } }),
+        expect.objectContaining({ displayName: "Name 4", context: { topic: "topic_4" } }),
       ]
     )
 
     expect(mockUnregisterAccessories).toHaveBeenCalledWith(
       "homebridge-tost-corp-somfy-rts-web",
       "TOSTCorpSomfyRTSWeb",
-      [accessories[1]]
+      [expect.objectContaining({ displayName: "Name 2", context: { topic: "topic_2" } })]
     )
+
+    expect(mockUpdateAccessories).toHaveBeenCalledWith([
+      expect.objectContaining({ displayName: "Name 1 - Updated", context: { topic: "topic_1" } }),
+    ])
   })
 })

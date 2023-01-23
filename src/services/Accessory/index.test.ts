@@ -6,17 +6,17 @@ import { DeviceEvent, DeviceState } from "../Device/types"
 import { AccessoryContext } from "./types"
 
 interface CreateAccessoryArgs {
-  withAccessory?: boolean
+  withPlatformAccessory?: boolean
 }
 
 function createAccessory(args?: CreateAccessoryArgs) {
-  const { withAccessory } = args ?? {}
+  const { withPlatformAccessory } = args ?? {}
 
   const homebridge = new HomebridgeAPI()
   const api = new ApiClient({ id: "DEVICE_ID" })
   const device = new Device({ api, name: "Name 1", topic: "topic_1" })
 
-  const platformAccessory = withAccessory
+  const platformAccessory = withPlatformAccessory
     ? new homebridge.platformAccessory<AccessoryContext>("Name 2", "uuid-2")
     : undefined
 
@@ -30,17 +30,17 @@ function createAccessory(args?: CreateAccessoryArgs) {
 }
 
 describe("constructor", () => {
-  test("should not use the platform accessory displayName", () => {
+  test("should use the device's name - no platform accessory", () => {
     const { accessory } = createAccessory()
 
     expect(accessory.accessory.displayName).toBe("Name 1")
     expect(accessory.accessory.displayName).not.toBe("uuid-2")
   })
 
-  test("should use the platform accessory displayName", () => {
-    const { accessory } = createAccessory({ withAccessory: true })
+  test("should use the device's name", () => {
+    const { accessory } = createAccessory({ withPlatformAccessory: true })
 
-    expect(accessory.accessory.displayName).toBe("Name 2")
+    expect(accessory.accessory.displayName).toBe("Name 1")
     expect(accessory.accessory.UUID).toBe("uuid-2")
   })
 })
@@ -48,13 +48,11 @@ describe("constructor", () => {
 describe("getCurrentPosition", () => {
   test("it should returns the device position", () => {
     const { accessory, device } = createAccessory()
-    const mockTouch = jest.spyOn(device as any, "touch").mockReturnValue(undefined)
     const mockGetPosition = jest.spyOn(device as any, "getPosition").mockReturnValue(42)
 
     const position = accessory["getCurrentPosition"]()
 
     expect(position).toBe(42)
-    expect(mockTouch).toHaveBeenCalled()
     expect(mockGetPosition).toHaveBeenCalled()
   })
 })
@@ -170,7 +168,7 @@ describe("getTargetPosition", () => {
   test("it should returns the new position", () => {
     const { accessory } = createAccessory()
 
-    accessory["targetPosition"] = 42
+    accessory["position"] = 42
 
     const targetPosition = accessory["getTargetPosition"]()
 

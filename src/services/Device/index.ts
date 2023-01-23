@@ -8,8 +8,8 @@ import { DeviceEvent, DeviceState } from "./types"
 
 interface DeviceConstructorArgs {
   api: ApiClient
-  name: string
   topic: string
+  name?: string
   duration?: number
 }
 
@@ -27,7 +27,7 @@ export default class Device extends EventEmitter {
     super()
 
     this.api = args.api
-    this.name = args.name
+    this.name = args.name ?? _.startCase(args.topic)
     this.topic = args.topic
     this.duration = args.duration ?? configuration.somfy.defaultDuration
   }
@@ -38,12 +38,6 @@ export default class Device extends EventEmitter {
 
   public getState(): DeviceState {
     return this.state
-  }
-
-  public touch(): void {
-    this.api.init().catch((error) => {
-      this.log("error", error)
-    })
   }
 
   public async setPosition(position: number): Promise<void> {
