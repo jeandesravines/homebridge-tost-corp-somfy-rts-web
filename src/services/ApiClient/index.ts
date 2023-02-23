@@ -1,4 +1,5 @@
 import * as configuration from "../../configuration"
+import fetch from "node-fetch"
 
 interface ApiClientConstructorArgs {
   id: string
