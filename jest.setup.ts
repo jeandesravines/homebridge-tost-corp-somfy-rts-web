@@ -1,7 +1,4 @@
 // Mocks
 
 jest.mock("homebridge/lib/api", () => require("./tests/mocks/homebridge"))
-
-// Fetch
-
-global.fetch = jest.fn()
+jest.mock("node-fetch", () => require("./tests/mocks/node-fetch"))

@@ -1,3 +1,4 @@
+import fetch from "node-fetch"
 import ApiClient from "."
 
 function createApiClient() {
@@ -7,7 +8,7 @@ function createApiClient() {
 describe("action", () => {
   test("it should request the API", async () => {
     const client = createApiClient()
-    const spyFetch = jest.spyOn({ fetch } as any, "fetch").mockResolvedValue(undefined)
+    const spyFetch = fetch
 
     const result = await client.action({
       topic: "my_topic",

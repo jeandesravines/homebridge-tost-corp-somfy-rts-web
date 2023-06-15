@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
-    "module": "CommonJS",
+    "module": "NodeNext",
     "outDir": "dist",
     "resolveJsonModule": true,
     "skipLibCheck": true,

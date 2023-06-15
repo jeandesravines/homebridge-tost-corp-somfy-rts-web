@@ -20,16 +20,13 @@ export default class Accessory {
 
   constructor(args: ConstructorArgs) {
     const { homebridge, device, accessory } = args
-
     const { platformName } = configuration.platform
     const { Service, Characteristic } = homebridge.hap
     const { topic, name } = device
-
     const uuid = homebridge.hap.uuid.generate(platformName + "." + topic)
 
     this.device = device
     this.homebridge = homebridge
-
     this.accessory = accessory ?? new this.homebridge.platformAccessory(name, uuid)
     this.accessory.context.topic = topic
     this.accessory.displayName = name
