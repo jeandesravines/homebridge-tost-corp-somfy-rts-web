@@ -1,4 +1,4 @@
 export default {
   defaultDuration: 20_000,
-  initialPosition: 100,
+  initialPosition: new Date().getHours() < 6 ? 0 : 100,
 }
